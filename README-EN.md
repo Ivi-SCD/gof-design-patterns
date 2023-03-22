@@ -1,4 +1,4 @@
-**Language: [PT-BR](https://github.com/Ivi-SCD/GoF-DesignPatterns/edit/main/README.md) | > EN**
+**Language: [PT-BR](https://github.com/Ivi-SCD/GoF-DesignPatterns) | > EN**
 
 ## :bamboo: Complete Guide To GoF Design Patterns :bamboo:
 In this repository I will treat all design patterns defined in the book **[GoF - Gang of Four](https://www.amazon.in/Design-Patterns-Object-Oriented-Addison-Wesley-Professional-ebook/dp/B000SEIBB8)**, also known as "Design Patterns: Elements of Reusable Object-Oriented Software". This programming-oriented book is essential for all programmers, especially those working with the object-oriented paradigm. It was written by Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides. The book was published in 1994 and since then has been one of the main resources for understanding object-oriented design patterns. The GoF authors present a set of **23 design patterns** that are divided into three categories: **Creational Patterns, Structural Patterns and Behavioral Patterns.**
