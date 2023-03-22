@@ -1,4 +1,4 @@
-**Língua: > PT-BR | [EN](https://github.com/Ivi-SCD/GoF-DesignPatterns/edit/main/README-EN.md)**
+**Língua: > PT-BR | [EN](https://github.com/Ivi-SCD/GoF-DesignPatterns/blob/main/README-EN.md)**
 
 ## :bamboo: Guia Completo Sobre GoF Design Patterns :bamboo:
 Neste repositório tratarei todos os padrões de projetos definidos no livro **[GoF (Gang of Four)](https://www.amazon.in/Design-Patterns-Object-Oriented-Addison-Wesley-Professional-ebook/dp/B000SEIBB8)**, também conhecido como "Design Patterns: Elements of Reusable Object-Oriented Software". Este livro voltado para a área de programação é essencial para todos os programadores, principalmente os que trabalham com o paradigma de orientação a objetos. Ele foi escrito por Erich Gamma, Richard Helm, Ralph Johnson e John Vlissides. O livro foi publicado em 1994 e desde então tem sido um dos principais recursos para entender os design patterns relacionados a orientação a objetos. Os autores do GoF apresentam um conjunto de **23 padrões de design** que são divididos em três categorias: **Padrões Criacionais, Padrões Estruturais e Padrões Comportamentais.**
