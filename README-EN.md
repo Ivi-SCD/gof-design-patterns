@@ -13,12 +13,12 @@ Summary of all types of design patterns:
    * [Builder](#builder)
    * [Prototype](#prototype)
 * **Structural Patterns**
-   * adapter
-   * Bridge
-   * Composite
-   * decorator
-   * facade
-   * Flyweight
+   * [Adapter](#adapter)
+   * [Bridge](#bridge)
+   * [Composite](#composite)
+   * [Decorator](#decorator)
+   * [Facade](#facade)
+   * [Flyweight](#flyweight)
 * **Behavioral patterns**
    * Chain Of Responsibility
    *Command
@@ -432,4 +432,502 @@ With the implementation of the `Prototype` pattern, we can create different type
 
 ##
 
-## Structural Patterns [Building... 👷]
+## Structural Patterns
+### <a name="adapter"></a> Adapter
+
+The Adapter pattern is a structural design pattern that allows two classes with incompatible interfaces to work together. It converts the interface of one class into another interface that the client expects. This allows objects with different interfaces to work together, without the client needing to modify the code of the original class.
+
+In Java, the Adapter pattern is implemented through an adapter class that implements the desired interface and contains an instance of the original class. The adapter class implements the methods of the desired interface and calls the corresponding methods in the original class.
+
+Here is a real-world example of the Adapter pattern in Java:
+
+Suppose we have a class that provides weather information, but its interface is not compatible with the interface that the client wants to use. Instead of modifying the original class, we can create an adapter class that implements the desired interface and calls the corresponding methods in the original class.
+
+```java
+// Client interface
+public interface WeatherInfo {
+    public double getTemperature();
+    public double getHumidity();
+}
+
+// Original class with incompatible interface
+public class Weather {
+    public float getTemp() {
+        // code to get the temperature
+    }
+
+    public float getHumi() {
+        // code to get the humidity
+    }
+}
+
+// Adapter class
+public class WeatherAdapter implements WeatherInfo {
+    private Weather weather;
+
+    public WeatherAdapter(Weather weather) {
+        this.weather = weather;
+    }
+
+    public double getTemperature() {
+        return weather.getTemp();
+    }
+
+    public double getHumidity() {
+        return weather.getHumi();
+    }
+}
+```
+
+In this example, the `Weather` class provides weather information, but its interface is not compatible with the client's interface. The `WeatherAdapter` class implements the `WeatherInfo` interface and contains an instance of the `Weather` class. The `WeatherAdapter` class implements the methods of the `WeatherInfo` interface and calls the corresponding methods in the `Weather` class.
+
+With the Adapter pattern, the client can use the `WeatherAdapter` class to get weather information, without needing to modify the original `Weather` class. This allows objects with different interfaces to work together, without the client needing to modify the code of the original class.
+
+##
+
+### <a name="bridge">Bridge</a>
+
+The Bridge pattern is a structural design pattern that separates an abstraction from its implementation, allowing both to vary independently. This is useful when we have multiple variations of abstractions and implementations, and we want to avoid an explosion of subclasses.
+
+In Java, the Bridge pattern can be implemented using an abstract class that represents the abstraction and an interface that represents the implementation. The abstract class has a reference to the interface and delegates the method calls to the implementation.
+
+Here is a real example of the Bridge pattern in Java:
+
+Suppose we have a drawing application that allows the user to draw different shapes, such as rectangles, circles, and triangles. For each shape, we have different variations of colors and drawing styles. To avoid an explosion of subclasses for each combination of shape and style, we can use the Bridge pattern.
+
+```java
+// Implementation interface
+public interface DrawingAPI {
+    public void drawShape(int x, int y, int width, int height);
+}
+
+// Implementation A
+public class DrawingAPIA implements DrawingAPI {
+    public void drawShape(int x, int y, int width, int height) {
+        // draw the shape using implementation A
+    }
+}
+
+// Implementation B
+public class DrawingAPIB implements DrawingAPI {
+    public void drawShape(int x, int y, int width, int height) {
+        // draw the shape using implementation B
+    }
+}
+
+// Abstraction
+public abstract class Shape {
+    protected DrawingAPI drawingAPI;
+
+    public Shape(DrawingAPI drawingAPI) {
+        this.drawingAPI = drawingAPI;
+    }
+
+    public abstract void draw();
+}
+
+// Refined Abstraction
+public class Rectangle extends Shape {
+    private int x, y, width, height;
+
+    public Rectangle(int x, int y, int width, int height, DrawingAPI drawingAPI) {
+        super(drawingAPI);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public void draw() {
+        drawingAPI.drawShape(x, y, width, height);
+    }
+}
+
+// Refined Abstraction
+public class Circle extends Shape {
+    private int x, y, radius;
+
+    public Circle(int x, int y, int radius, DrawingAPI drawingAPI) {
+        super(drawingAPI);
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    public void draw() {
+        drawingAPI.drawShape(x, y, radius, radius);
+    }
+}
+```
+
+In this example, the `DrawingAPI` interface represents the implementation of how to draw the shapes. The `DrawingAPIA` and `DrawingAPIB` classes are different implementations of the `DrawingAPI` interface.
+
+The abstract class `Shape` represents the abstraction of a generic shape. It has a reference to the `DrawingAPI` interface and delegates the `draw()` method call to the implementation. The `Rectangle` and `Circle` classes are refined variations of the `Shape` abstraction, each with their own specific parameters and behaviors.
+
+With the Bridge pattern, we can add new shapes or implementations without needing to create a new class for each combination of shape and style. This simplifies the code and makes maintenance easier.
+
+##
+
+### <a name="composite">Composite</a>
+
+The Composite pattern is a structural design pattern that allows composing objects into tree structures to represent object hierarchies. It enables clients to treat individual objects and collections of objects uniformly.
+
+In Java, the Composite pattern can be implemented using an interface or abstract class that represents the base component and a class that represents the composite component. The base component can have methods that are implemented by both simple components and composite components. The composite component maintains a list of its child components and implements methods that work with the child list.
+
+Here is a real-world example of the Composite pattern in Java:
+
+Suppose we have a hierarchy of components to build a menu for an application. The menu can be composed of several menu items, including drop-down menus and regular menu items. Each menu item can have a label, an icon, and an action associated with it. We can use the Composite pattern to create a tree structure to represent the menu.
+
+```java
+// Base component
+public interface MenuComponent {
+    public void add(MenuComponent menuComponent);
+    public void remove(MenuComponent menuComponent);
+    public MenuComponent getChild(int i);
+    public String getName();
+    public String getDescription();
+    public void print();
+}
+
+// Leaf component
+public class MenuItem implements MenuComponent {
+    private String name;
+    private String description;
+    private boolean vegetarian;
+    private double price;
+
+    public MenuItem(String name, String description, boolean vegetarian, double price) {
+        this.name = name;
+        this.description = description;
+        this.vegetarian = vegetarian;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isVegetarian() {
+        return vegetarian;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void print() {
+        System.out.print("  " + getName());
+        if (isVegetarian()) {
+            System.out.print("(v)");
+        }
+        System.out.println(", " + getPrice());
+        System.out.println("     -- " + getDescription());
+    }
+
+    public void add(MenuComponent menuComponent) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void remove(MenuComponent menuComponent) {
+        throw new UnsupportedOperationException();
+    }
+
+    public MenuComponent getChild(int i) {
+        throw new UnsupportedOperationException();
+    }
+}
+
+// Composite component
+public class Menu implements MenuComponent {
+    private List<MenuComponent> menuComponents = new ArrayList<>();
+    private String name;
+    private String description;
+
+    public Menu(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public void add(MenuComponent menuComponent) {
+        menuComponents.add(menuComponent);
+    }
+
+    public void remove(MenuComponent menuComponent) {
+        menuComponents.remove(menuComponent);
+    }
+
+    public MenuComponent getChild(int i) {
+        return menuComponents.get(i);
+    }
+    
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void print() {
+        System.out.println("\n" + getName());
+        System.out.println(", " + getDescription());
+        System.out.println("---------------------");
+
+        for (MenuComponent menuComponent : menuComponents) {
+           menuComponent.print();
+     }
+}
+```
+
+
+In this example, the `MenuComponent` interface is the base component, and the `MenuItem` and `Menu` classes are the leaf and composite components, respectively. The `MenuItem` class represents a regular menu item, while the `Menu` class represents a drop-down menu. The `Menu` class maintains a list of its child components and implements the `add`, `remove`, and `getChild` methods to manage them.
+
+When we want to print the menu, we can call the `print` method of the root component of the hierarchy, which in our case is the `Menu` class. The `print` method traverses the child component list and calls the `print` method on each of them, printing the name, description, and price of the menu items, as well as the names of the drop-down menus.
+
+##
+
+### <a name="decorator">Decorator</a>
+The Decorator design pattern is a structural pattern that allows adding additional behaviors to objects dynamically, without modifying their original structure. It is very useful in situations where we need to add functionalities to an object in a flexible and modular way, without the need to create subclasses for each combination of functionalities.
+
+The Decorator pattern is implemented by creating an abstract Decorator class that implements the same interface as the original object and contains a reference to the original object. Then, the concrete classes that implement the additional behavior extend the Decorator class and add their functionalities to the original object.
+
+To illustrate the Decorator pattern, let's consider an example of a coffee shop that sells different types of coffee. Each coffee can be decorated with different ingredients, such as milk, whipped cream, caramel, etc. Instead of creating a separate class for each possible combination of coffee with additional ingredients, we can use the Decorator pattern to dynamically add the desired ingredients.
+
+```java
+// Component interface
+public interface Beverage {
+    String getDescription();
+    double getCost();
+}
+
+// Concrete component
+public class Espresso implements Beverage {
+    public String getDescription() {
+        return "Espresso";
+    }
+
+    public double getCost() {
+        return 1.99;
+    }
+}
+
+// Decorator abstract class
+public abstract class CondimentDecorator implements Beverage {
+    protected Beverage beverage;
+
+    public CondimentDecorator(Beverage beverage) {
+        this.beverage = beverage;
+    }
+
+    public abstract String getDescription();
+}
+
+// Concrete decorator classes
+public class Milk extends CondimentDecorator {
+    public Milk(Beverage beverage) {
+        super(beverage);
+    }
+
+    public String getDescription() {
+        return beverage.getDescription() + ", Milk";
+    }
+
+    public double getCost() {
+        return beverage.getCost() + 0.10;
+    }
+}
+
+public class Caramel extends CondimentDecorator {
+    public Caramel(Beverage beverage) {
+        super(beverage);
+    }
+
+    public String getDescription() {
+        return beverage.getDescription() + ", Caramel";
+    }
+
+    public double getCost() {
+        return beverage.getCost() + 0.20;
+    }
+}
+
+// Client code
+public class Cafe {
+    public static void main(String[] args) {
+        Beverage espresso = new Espresso();
+        System.out.println(espresso.getDescription() + " $" + espresso.getCost());
+
+        Beverage espressoWithMilk = new Milk(espresso);
+        System.out.println(espressoWithMilk.getDescription() + " $" + espressoWithMilk.getCost());
+
+        Beverage espressoWithCaramel = new Caramel(espresso);
+        System.out.println(espressoWithCaramel.getDescription() + " $" + espressoWithCaramel.getCost());
+
+        Beverage espressoWithMilkAndCaramel = new Caramel(new Milk(espresso));
+        System.out.println(espressoWithMilkAndCaramel.getDescription() + " $" + espressoWithMilkAndCaramel.getCost());
+    }
+}
+```
+In this example, the `Beverage` interface is the base component, and the `Espresso` class is the concrete implementation of this component. The `CondimentDecorator`, `Milk`, and `Caramel` classes are the abstract and concrete decorators, respectively. The `CondimentDecorator` class is an abstract class that extends the `Beverage` interface and contains a reference to another Beverage instance. The `Milk` and `Caramel` classes are concrete decorators that extend the `CondimentDecorator` class and add functionalities to the original object. The client code creates different combinations of coffee with ingredients by instantiating different decorators and chaining them together with the original `Beverage` object.
+
+##
+
+### <a name="facade">Facade</a>
+The Facade pattern is a structural design pattern that provides a simplified interface to a set of more complex and hard-to-use classes. The goal of the Facade pattern is to provide an abstraction layer that hides the underlying complexity of the system and provides a simple and easy-to-use interface for clients.
+
+The Facade pattern is useful when there is a complex system with many classes and interfaces, and the client needs to interact with several parts of it. Instead of the client having to know all the implementation details of the system, they can simply use the interface provided by the facade.
+
+The Facade pattern is implemented by creating a class that provides a simplified interface to the client, hiding all the complexity of the underlying system. The facade delegates method calls to the system classes and returns results in a simple and easy-to-use way for the client.
+
+To illustrate the Facade pattern, let's consider an example of a banking system. The banking system may have many different classes and interfaces, such as bank accounts, credit cards, loans, etc. Instead of the client having to interact directly with all these classes and interfaces, we can provide a facade that simplifies the client's interaction with the banking system.
+
+```java
+// Facade class
+public class BankSystem {
+    private AccountService accountService;
+    private CreditCardService creditCardService;
+    private LoanService loanService;
+
+    public BankSystem() {
+        accountService = new AccountService();
+        creditCardService = new CreditCardService();
+        loanService = new LoanService();
+    }
+
+    public void createAccount(String customerName, String accountType) {
+        accountService.createAccount(customerName, accountType);
+    }
+
+    public void applyForCreditCard(String customerName) {
+        creditCardService.applyForCreditCard(customerName);
+    }
+
+    public void applyForLoan(String customerName, double amount) {
+        loanService.applyForLoan(customerName, amount);
+    }
+}
+
+// Account service class
+public class AccountService {
+    public void createAccount(String customerName, String accountType) {
+        // Implementation details
+    }
+}
+
+// Credit card service class
+public class CreditCardService {
+    public void applyForCreditCard(String customerName) {
+        // Implementation details
+    }
+}
+
+// Loan service class
+public class LoanService {
+    public void applyForLoan(String customerName, double amount) {
+        // Implementation details
+    }
+}
+
+// Client code
+public class BankClient {
+    public static void main(String[] args) {
+        BankSystem bankSystem = new BankSystem();
+        bankSystem.createAccount("John Doe", "Checking");
+        bankSystem.applyForCreditCard("John Doe");
+        bankSystem.applyForLoan("John Doe", 10000);
+    }
+}
+```
+In this example, the `BankSystem` class is the facade that provides a simplified interface for the client to interact with the banking system. The facade delegates method calls to the `AccountService`, `CreditCardService`, and `LoanService` classes, which are the complex classes of the banking system. The client interacts only with the facade, which hides all the complexity of the underlying system.
+
+The Facade pattern is very useful when dealing with complex and hard-to-use systems. It provides an abstraction layer that makes it easier for clients to use the system, and it also makes it easier to change the system without affecting the clients.
+
+##
+
+### <a name="flyweight">Flyweight</a>
+The Flyweight pattern is used to minimize memory usage when dealing with large numbers of similar objects. The idea behind this pattern is to share as much data as possible between similar objects, rather than creating new objects every time.
+
+In Java, the Flyweight pattern can be implemented using a combination of a factory class and a flyweight class. The factory class is responsible for managing the flyweights and maintaining a cache of existing flyweights. The flyweight class contains the shared state between the objects and the context-specific state is passed in as arguments when the flyweight method is called.
+
+Here's an example implementation of the Flyweight pattern in Java:
+
+```java
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.HashMap;
+import java.util.Map;
+
+// Flyweight interface
+interface Shape {
+    void draw(Graphics g, int x, int y, int width, int height, Color color);
+}
+
+// Concrete flyweight
+class Circle implements Shape {
+    private Color color;
+
+    public void draw(Graphics g, int x, int y, int width, int height, Color color) {
+        this.color = color;
+        g.setColor(color);
+        g.drawOval(x, y, width, height);
+    }
+}
+
+// Flyweight factory
+class ShapeFactory {
+    private static final Map<Color, Shape> circleMap = new HashMap<>();
+
+    public static Shape getCircle(Color color) {
+        Circle circle = (Circle) circleMap.get(color);
+
+        if (circle == null) {
+            circle = new Circle();
+            circleMap.put(color, circle);
+        }
+
+        return circle;
+    }
+}
+
+// Client code
+public class Client {
+    private static final Color[] colors = { Color.RED, Color.GREEN, Color.BLUE };
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 20; ++i) {
+            Circle circle = (Circle) ShapeFactory.getCircle(getRandomColor());
+            circle.draw(getRandomX(), getRandomY(), getRandomWidth(), getRandomHeight(), circle.color);
+        }
+    }
+
+    private static Color getRandomColor() {
+        return colors[(int) (Math.random() * colors.length)];
+    }
+
+    private static int getRandomX() {
+        return (int) (Math.random() * 100);
+    }
+
+    private static int getRandomY() {
+        return (int) (Math.random() * 100);
+    }
+
+    private static int getRandomWidth() {
+        return (int) (Math.random() * 100);
+    }
+
+    private static int getRandomHeight() {
+        return (int) (Math.random() * 100);
+    }
+}
+```
+
+In this example, the `Shape` interface represents the flyweight and the `Circle` class represents a concrete flyweight. The `ShapeFactor`y class is responsible for managing the flyweights and maintaining a cache of existing flyweights. The `Client` class uses the `ShapeFactory` to obtain flyweights and calls their `draw()` method with context-specific state.
+
+The `ShapeFactory` maintains a `Map` of existing `Circle` objects keyed by their color. When a new `Circle` object is requested, the `ShapeFactory` checks if an object with the requested color already exists. If it does, the existing object is returned. If not, a new `Circle` object is created, added to the cache, and returned.
+
+In this example, 20 `Circle` objects are created with random colors and positions. Note that the colors are shared among multiple Circle objects, thanks to the use of the Flyweight pattern. By using this pattern, we can significantly reduce the amount of memory required to store similar objects. Instead of creating 20 `Circle` objects with different colors, only 3 `Circle` objects are created,
