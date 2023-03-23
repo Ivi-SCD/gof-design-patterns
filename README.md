@@ -13,12 +13,12 @@ Sumário de todos os tipos de design patterns:
   * [Builder](#builder)
   * [Prototype](#prototype)
 * **Padrões Estruturais**
-  * Adapter
-  * Bridge
-  * Composite
-  * Decorator
-  * Facade
-  * Flyweight
+  * [Adapter](#adapter)
+  * [Bridge](#bridge)
+  * [Composite](#composite)
+  * [Decorator](#decorator)
+  * [Facade](#facade)
+  * [Flyweight](#flyweight)
 * **Padrões comportamentais**
   * Chain Of Responsability
   * Command
@@ -432,4 +432,503 @@ Com a implementação do padrão `Prototype`, podemos criar diferentes tipos de 
 
 ##
 
-## Padrões Estruturais [Building... :construction_worker:]
+## Padrões Estruturais
+### <a name="adapter"></a> Adapter
+O padrão Adapter é um design pattern estrutural que permite que **duas classes com interfaces incompatíveis possam trabalhar juntas**. Ele **converte a interface de uma classe em outra interface** que o cliente espera. Isso permite que objetos com interfaces diferentes trabalhem juntos, sem que o cliente precise modificar o código da classe original.
+
+O padrão Adapter é **útil quando temos uma classe existente que possui a funcionalidade necessária, mas sua interface não é compatível com a interface do cliente**. Em vez de modificar a classe original, podemos criar uma classe adaptadora que implementa a interface necessária e delega as chamadas para a classe original.
+
+Em Java, o padrão Adapter é implementado por meio de uma classe adaptadora que implementa a interface desejada e contém uma instância da classe original. A classe adaptadora implementa os métodos da interface desejada e chama os métodos correspondentes na classe original.
+
+A seguir teremos uma classe que fornece informações sobre o tempo, mas sua interface não é compatível com a interface que o cliente deseja usar. Em vez de modificar a classe original, podemos criar uma classe adaptadora que implementa a interface desejada e chama os métodos correspondentes na classe original.
+
+Segue o exemplo:
+```java
+// Interface do cliente
+public interface TempoInfo {
+    public double getTemperatura();
+    public double getUmidade();
+}
+
+// Classe original com interface incompatível
+public class Tempo {
+    public float getTemp() {
+        // código para obter a temperatura
+    }
+
+    public float getUmi() {
+        // código para obter a umidade
+    }
+}
+
+// Classe adaptadora
+public class TempoAdapter implements TempoInfo {
+    private Tempo tempo;
+
+    public TempoAdapter(Tempo tempo) {
+        this.tempo = tempo;
+    }
+
+    public double getTemperatura() {
+        return tempo.getTemp();
+    }
+
+    public double getUmidade() {
+        return tempo.getUmi();
+    }
+}
+
+```
+
+Nesse exemplo, a classe `Tempo` fornece informações sobre o tempo, mas sua interface não é compatível com a interface do cliente. A classe `TempoAdapter` implementa a interface `TempoInfo` e contém uma instância da classe `Tempo`. A classe `TempoAdapter` implementa os métodos da interface `TempoInfo` e chama os métodos correspondentes na classe `Tempo`.
+
+Com o padrão Adapter, o cliente pode usar a classe `TempoAdapter` para obter informações sobre o tempo, sem precisar modificar a classe original `Tempo`. Isso permite que objetos com interfaces diferentes trabalhem juntos, sem que o cliente precise modificar o código da classe original.
+
+##
+
+### <a name="bridge"></a> Bridge
+O padrão Bridge é um design pattern estrutural que separa uma abstração da sua implementação, permitindo que ambas possam variar independentemente. Isso é útil quando temos várias variações de abstrações e implementações, e queremos evitar uma explosão de subclasses.
+
+Em Java, o padrão Bridge pode ser implementado através de uma classe abstrata que representa a abstração e uma interface que representa a implementação. A classe abstrata tem uma referência para a interface e delega a chamada dos métodos para a implementação.
+
+Veja um exemplo real do padrão Bridge em Java:
+
+Suponha que temos uma aplicação de desenho que permite ao usuário desenhar diferentes formas, como retângulos, círculos e triângulos. Para cada forma, temos diferentes variações de cores e estilos de desenho. Para evitar uma explosão de subclasses para cada combinação de forma e estilo, podemos usar o padrão Bridge.
+
+```java
+// Interface de implementação
+public interface DrawingAPI {
+    public void drawShape(int x, int y, int width, int height);
+}
+
+// Implementação A
+public class DrawingAPIA implements DrawingAPI {
+    public void drawShape(int x, int y, int width, int height) {
+        // desenha a forma usando a implementação A
+    }
+}
+
+// Implementação B
+public class DrawingAPIB implements DrawingAPI {
+    public void drawShape(int x, int y, int width, int height) {
+        // desenha a forma usando a implementação B
+    }
+}
+
+// Abstração
+public abstract class Shape {
+    protected DrawingAPI drawingAPI;
+
+    public Shape(DrawingAPI drawingAPI) {
+        this.drawingAPI = drawingAPI;
+    }
+
+    public abstract void draw();
+}
+
+// Abstração refinada
+public class Rectangle extends Shape {
+    private int x, y, width, height;
+
+    public Rectangle(int x, int y, int width, int height, DrawingAPI drawingAPI) {
+        super(drawingAPI);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public void draw() {
+        drawingAPI.drawShape(x, y, width, height);
+    }
+}
+
+// Abstração refinada
+public class Circle extends Shape {
+    private int x, y, radius;
+
+    public Circle(int x, int y, int radius, DrawingAPI drawingAPI) {
+        super(drawingAPI);
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    public void draw() {
+        drawingAPI.drawShape(x, y, radius, radius);
+    }
+}
+```
+
+Nesse exemplo, a interface `DrawingAPI` representa a implementação de como desenhar as formas. As classes `DrawingAPIA` e `DrawingAPIB` são implementações diferentes da interface `DrawingAPI`.
+
+A classe abstrata `Shape` representa a abstração de uma forma genérica. Ela tem uma referência para a interface `DrawingAPI` e delega a chamada do método `draw()` para a implementação. As classes `Rectangle` e `Circle` são variações refinadas da abstração `Shape`, cada uma com seus próprios parâmetros e comportamentos específicos.
+
+Com o padrão Bridge, podemos adicionar novas formas ou implementações sem precisar criar uma nova classe para cada combinação de forma e estilo. Isso simplifica o código e torna a manutenção mais fácil.
+
+##
+
+### <a name="composite"></a> Composite
+O padrão Composite é um padrão de design estrutural que permite compor objetos em estruturas de árvore para representar hierarquias de objetos. Ele permite que os clientes tratem objetos individuais e coleções de objetos de maneira uniforme.
+
+Em Java, o padrão Composite pode ser implementado usando uma interface ou classe abstrata que representa o componente base e uma classe que representa o componente composto. O componente base pode ter métodos que são implementados tanto pelos componentes simples quanto pelos componentes compostos. O componente composto mantém uma lista de seus componentes filhos e implementa os métodos que trabalham com a lista de filhos.
+
+Aqui está um exemplo real do padrão Composite em Java:
+
+Suponha que temos uma hierarquia de componentes para construir um menu de um aplicativo. O menu pode ser composto por vários itens de menu, incluindo menus suspensos e itens de menu regulares. Cada item de menu pode ter um rótulo, um ícone e uma ação associada a ele. Podemos usar o padrão Composite para criar uma estrutura de árvore para representar o menu.
+
+```java
+// Componente base
+public interface MenuComponent {
+    public void add(MenuComponent menuComponent);
+    public void remove(MenuComponent menuComponent);
+    public MenuComponent getChild(int i);
+    public String getName();
+    public String getDescription();
+    public void print();
+}
+
+// Componente folha
+public class MenuItem implements MenuComponent {
+    private String name;
+    private String description;
+    private boolean vegetarian;
+    private double price;
+
+    public MenuItem(String name, String description, boolean vegetarian, double price) {
+        this.name = name;
+        this.description = description;
+        this.vegetarian = vegetarian;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isVegetarian() {
+        return vegetarian;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void print() {
+        System.out.print("  " + getName());
+        if (isVegetarian()) {
+            System.out.print("(v)");
+        }
+        System.out.println(", " + getPrice());
+        System.out.println("     -- " + getDescription());
+    }
+
+    public void add(MenuComponent menuComponent) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void remove(MenuComponent menuComponent) {
+        throw new UnsupportedOperationException();
+    }
+
+    public MenuComponent getChild(int i) {
+        throw new UnsupportedOperationException();
+    }
+}
+
+// Componente composto
+public class Menu implements MenuComponent {
+    private List<MenuComponent> menuComponents = new ArrayList<>();
+    private String name;
+    private String description;
+
+    public Menu(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public void add(MenuComponent menuComponent) {
+        menuComponents.add(menuComponent);
+    }
+
+    public void remove(MenuComponent menuComponent) {
+        menuComponents.remove(menuComponent);
+    }
+
+    public MenuComponent getChild(int i) {
+        return menuComponents.get(i);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void print() {
+        System.out.print("\n" + getName());
+        System.out.println(", " + getDescription());
+        System.out.println("---------------------");
+
+        for (MenuComponent menuComponent : menuComponents) {
+            menuComponent.print();
+        }
+    }
+}
+```
+
+Neste exemplo, a interface `MenuComponent` é o componente base, que define os métodos que são implementados tanto pelos componentes simples quanto pelos componentes compostos. A classe `MenuItem` é um componente folha, que representa um item de menu regular. Ele implementa apenas os métodos que são relevantes para um item de menu. A classe `Menu` é um componente composto, que representa um menu suspenso. Ele mantém uma lista de seus componentes filhos (que podem ser itens de menu regulares ou outros menus suspensos).
+
+##
+
+### <a name="decorator"></a> Decorator
+O padrão de projeto Decorator é um padrão estrutural que permite **adicionar comportamentos e funcionalidades a um objeto dinamicamente, sem precisar alterar a sua estrutura ou código**. Esse padrão é muito útil quando precisamos adicionar funcionalidades a objetos que já foram criados ou para os quais não temos acesso ao código-fonte.
+
+O padrão Decorator é **composto por quatro elementos principais: o componente abstrato, o componente concreto, o decorador abstrato e o decorador concreto**. O componente abstrato define a interface para objetos que podem ter responsabilidades adicionais acrescentadas a eles. O componente concreto implementa a interface do componente abstrato e define o objeto ao qual as responsabilidades adicionais serão acrescentadas. O decorador abstrato define a interface para os decoradores concretos e possui uma referência para um objeto do componente abstrato. O decorador concreto acrescenta responsabilidades ao componente.
+
+Um exemplo de uso do padrão Decorator em Java seria a implementação de um sistema de café que permite personalizar a bebida adicionando ingredientes extras, como leite, chantilly, caramelo, etc. invés de criar uma classe separada para cada combinação possível de café com ingredientes adicionais, podemos utilizar o padrão Decorator para adicionar dinamicamente os ingredientes desejados.
+
+```java
+// Component interface
+public interface Beverage {
+    String getDescription();
+    double getCost();
+}
+
+// Concrete component
+public class Espresso implements Beverage {
+    public String getDescription() {
+        return "Espresso";
+    }
+
+    public double getCost() {
+        return 1.99;
+    }
+}
+
+// Decorator abstract class
+public abstract class CondimentDecorator implements Beverage {
+    protected Beverage beverage;
+
+    public CondimentDecorator(Beverage beverage) {
+        this.beverage = beverage;
+    }
+
+    public abstract String getDescription();
+}
+
+// Concrete decorator classes
+public class Milk extends CondimentDecorator {
+    public Milk(Beverage beverage) {
+        super(beverage);
+    }
+
+    public String getDescription() {
+        return beverage.getDescription() + ", Milk";
+    }
+
+    public double getCost() {
+        return beverage.getCost() + 0.10;
+    }
+}
+
+public class Caramel extends CondimentDecorator {
+    public Caramel(Beverage beverage) {
+        super(beverage);
+    }
+
+    public String getDescription() {
+        return beverage.getDescription() + ", Caramel";
+    }
+
+    public double getCost() {
+        return beverage.getCost() + 0.20;
+    }
+}
+
+// Client code
+public class Cafe {
+    public static void main(String[] args) {
+        Beverage espresso = new Espresso();
+        System.out.println(espresso.getDescription() + " $" + espresso.getCost());
+
+        Beverage espressoWithMilk = new Milk(espresso);
+        System.out.println(espressoWithMilk.getDescription() + " $" + espressoWithMilk.getCost());
+
+        Beverage espressoWithCaramel = new Caramel(espresso);
+        System.out.println(espressoWithCaramel.getDescription() + " $" + espressoWithCaramel.getCost());
+
+        Beverage espressoWithMilkAndCaramel = new Caramel(new Milk(espresso));
+        System.out.println(espressoWithMilkAndCaramel.getDescription() + " $" + espressoWithMilkAndCaramel.getCost());
+    }
+}
+```
+Nesse exemplo, a interface `Beverage` é o componente base, e a classe `Espresso` é a implementação concreta desse componente. As classes `CondimentDecorator`, `Milk` e `Caramel` são os decoradores abstrato e concretos, respectivamente. A classe `CondimentDecorator` é uma classe abstrata que estende a interface `Beverage` e contém uma referência a outra instância de `Beverage`. As classes `Milk` e `Caramel` são decoradoras concretes que extendem do `CondimentDecorator` e referencia suas funcionalidades ao objeto original. O cliente pode criar diferentes combinações de café com diversos ingredientes apenas instanciando diferentes decoradores.
+
+##
+
+### <a name="facade"></a> Facade
+O padrão Facade é um padrão de projeto estrutural que **fornece uma interface simplificada para um conjunto de classes mais complexas e difíceis de usar**. O objetivo do padrão Facade é fornecer uma camada de abstração que esconde a complexidade subjacente do sistema e fornece uma interface simples e fácil de usar para os clientes.
+
+O padrão Facade é útil quando há um sistema complexo com muitas classes e interfaces e o cliente precisa interagir com várias partes dele. Em vez de o cliente ter que conhecer todos os detalhes de implementação do sistema, ele pode simplesmente usar a interface fornecida pela fachada.
+
+O padrão Facade é **implementado criando uma classe que fornece uma interface simplificada** para o cliente, escondendo toda a complexidade do sistema subjacente. A fachada delega as chamadas de métodos para as classes do sistema e retorna os resultados de forma simples e fácil de usar para o cliente.
+
+Para ilustrar o padrão Facade, vamos considerar um exemplo de um sistema bancário. O sistema bancário pode ter muitas classes e interfaces diferentes, como contas bancárias, cartões de crédito, empréstimos, etc. Em vez de o cliente ter que interagir diretamente com todas essas classes e interfaces, podemos fornecer uma fachada que simplifica a interação do cliente com o sistema bancário.
+
+```java
+// Facade class
+public class BankSystem {
+    private AccountService accountService;
+    private CreditCardService creditCardService;
+    private LoanService loanService;
+
+    public BankSystem() {
+        accountService = new AccountService();
+        creditCardService = new CreditCardService();
+        loanService = new LoanService();
+    }
+
+    public void createAccount(String customerName, String accountType) {
+        accountService.createAccount(customerName, accountType);
+    }
+
+    public void applyForCreditCard(String customerName) {
+        creditCardService.applyForCreditCard(customerName);
+    }
+
+    public void applyForLoan(String customerName, double amount) {
+        loanService.applyForLoan(customerName, amount);
+    }
+}
+
+// Account service class
+public class AccountService {
+    public void createAccount(String customerName, String accountType) {
+        // Implementation details
+    }
+}
+
+// Credit card service class
+public class CreditCardService {
+    public void applyForCreditCard(String customerName) {
+        // Implementation details
+    }
+}
+
+// Loan service class
+public class LoanService {
+    public void applyForLoan(String customerName, double amount) {
+        // Implementation details
+    }
+}
+
+// Client code
+public class BankClient {
+    public static void main(String[] args) {
+        BankSystem bankSystem = new BankSystem();
+        bankSystem.createAccount("John Doe", "Checking");
+        bankSystem.applyForCreditCard("John Doe");
+        bankSystem.applyForLoan("John Doe", 10000);
+    }
+}
+```
+Neste exemplo, a classe `BankSystem` é a fachada que fornece uma interface simplificada para o cliente interagir com o sistema bancário. A fachada delega as chamadas de métodos para as classes `AccountService`, `CreditCardService` e `LoanService`, que são as classes complexas do sistema bancário. O cliente interage apenas com a fachada, que esconde toda a complexidade do sistema subjacente.
+
+O padrão Facade é muito útil quando se lida com sistemas complexos e difíceis de usar. Ele fornece uma camada de abstração que torna
+
+##
+
+### <a name="flyweight"></a> Flyweight
+
+O padrão Flyweight é um padrão de design estrutural que tem como objetivo **minimizar o uso de memória compartilhando objetos que são usados repetidamente**. O padrão Flyweight é útil quando uma aplicação precisa lidar com um grande número de objetos similares, e o custo de criar e manter esses objetos individualmente é muito alto em termos de memória e desempenho.
+
+O padrão Flyweight é implementado através da criação de objetos leves (flyweights) que **armazenam as propriedades comuns entre objetos similares e compartilham essas propriedades com outros objetos**. Os flyweights armazenam apenas as propriedades que são únicas para cada objeto, reduzindo significativamente a quantidade de memória necessária para armazenar objetos similares.
+
+Para implementar o padrão Flyweight, é necessário separar as propriedades compartilhadas entre objetos similares e as propriedades que são únicas para cada objeto. As propriedades compartilhadas são armazenadas em um objeto flyweight, enquanto as propriedades únicas são armazenadas em um objeto contexto.
+
+Para ilustrar o padrão Flyweight, vamos considerar um exemplo de uma aplicação que desenha formas geométricas, como círculos e quadrados. Em vez de criar um novo objeto para cada forma geométrica desenhada, podemos usar o padrão Flyweight para compartilhar objetos similares.
+
+```java
+// Flyweight interface
+public interface Shape {
+    void draw(int x, int y, int radius);
+}
+
+// Concrete flyweight class for circle
+public class Circle implements Shape {
+    private final String color;
+
+    public Circle(String color) {
+        this.color = color;
+        System.out.println("Creating circle of color: " + color);
+    }
+
+    @Override
+    public void draw(int x, int y, int radius) {
+        System.out.println("Drawing circle of color: " + color + ", at x: " + x + ", y: " + y + ", radius: " + radius);
+    }
+}
+
+// Flyweight factory class
+public class ShapeFactory {
+    private static final Map<String, Shape> circleMap = new HashMap<>();
+
+    public static Shape getCircle(String color) {
+        Shape circle = circleMap.get(color);
+
+        if (circle == null) {
+            circle = new Circle(color);
+            circleMap.put(color, circle);
+        }
+
+        return circle;
+    }
+}
+
+// Client code
+public class FlyweightClient {
+    private static final String[] colors = { "Red", "Green", "Blue" };
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 20; i++) {
+            Shape circle = ShapeFactory.getCircle(getRandomColor());
+            circle.draw(getRandomX(), getRandomY(), getRandomRadius());
+        }
+    }
+
+    private static String getRandomColor() {
+        return colors[(int) (Math.random() * colors.length)];
+    }
+
+    private static int getRandomX() {
+        return (int) (Math.random() * 100);
+    }
+
+    private static int getRandomY() {
+        return (int) (Math.random() * 100);
+    }
+
+    private static int getRandomRadius() {
+        return (int) (Math.random() * 50);
+    }
+}
+
+```
+
+Nesse exemplo, a interface `Shape` representa o flyweight, que é implementado pela classe `Circle`. A classe `Circle` armazena apenas a cor do círculo, que é uma propriedade compartilhada por todos os círculos.
+
+A classe `ShapeFactory` é responsável por gerenciar os flyweights. Ela mantém um mapa de objetos Circle já criados e retorna um objeto existente se ele já foi criado antes ou cria um novo objeto `Circle` se ele ainda não existe.
+
+O cliente utiliza a classe `ShapeFactory` para obter os objetos `Circle` e chamar o método `draw()`. Neste exemplo, são criados 20 objetos `Circle` com cores e posições aleatórias. Observe que as cores são compartilhadas entre vários objetos `Circle`.
+
+Com o uso do padrão Flyweight, é possível reduzir significativamente a quantidade de memória necessária para armazenar objetos similares. No exemplo acima, em vez de criar 20 objetos `Circle` com cores diferentes, apenas 3 objetos `Circle` são criados, um para cada cor, e são compartilhados entre todos os círculos desenhados.
+
+##
+## Padrões Comportamentais
