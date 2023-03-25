@@ -19,6 +19,7 @@ Sumário de todos os tipos de design patterns:
   * [Decorator](#decorator)
   * [Facade](#facade)
   * [Flyweight](#flyweight)
+  * [Proxy](#proxy)
 * **Padrões comportamentais**
   * [Chain Of Responsability](#cor)
   * [Command](#command)
@@ -30,6 +31,7 @@ Sumário de todos os tipos de design patterns:
   * [Strategy](#strategy)
   * [Template Method](#tm)
   * [Visitor](#visitor)
+  * [Interpreter(#interpreter)
   
 Cada um desses padrões é explicado detalhadamente no livro GoF, juntamente com exemplos de código e diretrizes para sua implementação, este repositório tratará todos os principais pontos do livro, porém para entender e poder usufruir 100% do oferecido, recomendo fortemente a leitura do livro. Ao você estudar e entender esses padrões, poderá criar soluções de software mais flexíveis, reutilizáveis e fáceis de manter. Então vamos começar! Hands-On! Não se esqueça de marcar este repositório com uma :star: para poder sempre rever e estudar os design patterns sempre que precisar.
 
@@ -937,6 +939,48 @@ Com o uso do padrão Flyweight, é possível reduzir significativamente a quanti
 
 ##
 
+### <a name="proxy"></a> Proxy
+
+O padrão Proxy é um padrão de projeto estrutural que permite que um objeto substituto atue como substituto para outro objeto. O objeto substituto age como um intermediário entre o cliente e o objeto real. O objetivo desse padrão é permitir que o objeto real seja acessado remotamente ou através de outros meios complexos.
+
+O padrão Proxy é útil em situações em que o objeto real é caro para criar, levar muito tempo para responder ou está em um local remoto. Em vez de interagir diretamente com o objeto real, o cliente interage com o objeto substituto que fornece a mesma interface que o objeto real.
+
+Vamos supor que você está trabalhando em um sistema de compartilhamento de arquivos. Você tem uma classe chamada "FileDownloader" que baixa arquivos da Internet. O download de arquivos grandes pode levar muito tempo e pode ocupar muito espaço em disco. Portanto, em vez de baixar o arquivo diretamente, você pode criar uma classe Proxy para baixar o arquivo sob demanda.
+
+Aqui está o código Java para o padrão Proxy:
+
+```java
+public interface FileDownloader {
+    void download(String url);
+}
+
+public class RealFileDownloader implements FileDownloader {
+    public void download(String url) {
+        // Real implementation of file download
+    }
+}
+
+public class ProxyFileDownloader implements FileDownloader {
+    private RealFileDownloader downloader;
+    private String url;
+
+    public void download(String url) {
+        if (downloader == null) {
+            downloader = new RealFileDownloader();
+            this.url = url;
+        }
+
+        downloader.download(url);
+    }
+}
+```
+
+Nesse exemplo, a interface "FileDownloader" define um método "download" que baixa um arquivo a partir de uma URL. A classe "RealFileDownloader" implementa a interface "FileDownloader" e fornece a implementação real para o download de arquivos.
+
+A classe "ProxyFileDownloader" também implementa a interface "FileDownloader", mas em vez de baixar o arquivo diretamente, ela cria uma instância de "RealFileDownloader" sob demanda e delega o download para ela.
+
+##
+
 ## Padrões Comportamentais
 > Estes padrões lidam com a comunicação entre objetos e como eles interagem e se comunicam entre si para executar uma tarefa. Eles ajudam a separar as responsabilidades entre objetos e tornam o código mais flexível e fácil de modificar.
 
@@ -1761,6 +1805,55 @@ A classe `VisitorExample` cria um array de objetos `Shape` e dois visitantes, `A
 Em resumo, o padrão `Visitor` é um padrão de projeto comportamental que permite adicionar novas operações a uma estrutura de objetos existente sem modificar a própria estrutura. Em Java, o padrão Visitor é frequentemente implementado usando interfaces para os visitantes e as classes que serão visitadas. O exemplo acima ilustra como o padrão Visitor pode ser usado para adicionar uma nova operação a uma hierarquia de classes existente, sem modificar as próprias classes.
 
 #
+
+### <a name="interpreter"></a> Interpreter
+
+O padrão Interpreter é um padrão de projeto comportamental que define uma gramática para uma linguagem e fornece uma maneira de avaliar as expressões dessa linguagem. O padrão Interpreter é útil quando você tem uma linguagem que precisa ser avaliada em tempo de execução.
+
+O padrão Interpreter usa uma árvore de sintaxe para representar as expressões da linguagem. Cada nó na árvore é um objeto que representa uma expressão. O Interpreter percorre a árvore, avaliando cada nó e retornando o resultado.
+
+Vamos supor que você está trabalhando em um sistema que avalia expressões aritméticas simples. Você tem uma classe chamada "Expression" que define uma interface para as expressões e duas classes concretas "Number" e "Addition" que implementam a interface.
+
+```java
+public interface Expression {
+    int evaluate();
+}
+
+public class Number implements Expression {
+    private int value;
+
+    public Number(int value) {
+        this.value = value;
+    }
+
+    public int evaluate() {
+        return value;
+    }
+}
+
+public class Addition implements Expression {
+    private Expression left;
+    private Expression right;
+
+    public Addition(Expression left, Expression right) {
+        this.left = left;
+        this.right = right;
+    }
+
+    public int evaluate() {
+        return left.evaluate() + right.evaluate();
+    }
+}
+```
+
+Nesse exemplo, a interface `Expression` define o método `evaluate` que avalia a expressão e retorna o resultado. A classe `Number` implementa a interface `Expression` e representa um número inteiro. A classe `Addition` também implementa a interface `Expression` e representa uma expressão de adição.
+
+Para avaliar a expressão `2 + 3`, você cria uma instância de `Number` para representar o número 2, uma instância de `Number` para representar o número 3 e uma instância de `Addition` para representar a operação de adição. Então, você chama o método `evaluate` na instância de `Addition` para obter o resultado.
+
+```java
+Expression expression = new Addition(new Number(2), new Number(3));
+int result = expression.evaluate(); // Resultado é 5
+```
 
 ## Parabéns, você chegou no final do Guia GoF!! 🥳
 
