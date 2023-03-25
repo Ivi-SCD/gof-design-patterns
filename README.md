@@ -31,7 +31,7 @@ Sumário de todos os tipos de design patterns:
   * [Strategy](#strategy)
   * [Template Method](#tm)
   * [Visitor](#visitor)
-  * [Interpreter(#interpreter)
+  * [Interpreter](#interpreter)
   
 Cada um desses padrões é explicado detalhadamente no livro GoF, juntamente com exemplos de código e diretrizes para sua implementação, este repositório tratará todos os principais pontos do livro, porém para entender e poder usufruir 100% do oferecido, recomendo fortemente a leitura do livro. Ao você estudar e entender esses padrões, poderá criar soluções de software mais flexíveis, reutilizáveis e fáceis de manter. Então vamos começar! Hands-On! Não se esqueça de marcar este repositório com uma :star: para poder sempre rever e estudar os design patterns sempre que precisar.
 
