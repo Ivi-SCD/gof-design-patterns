@@ -20,16 +20,16 @@ Summary of all types of design patterns:
    * [Facade](#facade)
    * [Flyweight](#flyweight)
 * **Behavioral patterns**
-   * Chain Of Responsibility
-   *Command
-   * Iterator
-   * mediator
-   * memento
-   * Observer
-   * State
-   * Strategy
-   * Template Method
-   * Visitor
+  * [Chain Of Responsability](#cor)
+  * [Command](#command)
+  * [Iterator](#iterator)
+  * [Mediator](#mediator)
+  * [Memento](#memento)
+  * [Observer](#observer)
+  * [State](#state)
+  * [Strategy](#strategy)
+  * [Template Method](#tm)
+  * [Visitor](#visitor)
   
 Each of these patterns is explained in detail in the GoF book, along with code examples and guidelines for its implementation, this repository will cover all the main points of the book, but to understand and be able to enjoy 100% of what is offered, I strongly recommend reading the book. As you study and understand these patterns, you can create software solutions that are more flexible, reusable, and easier to maintain. So let's start! Hands-On! Don't forget to mark this repository with a :star: so that you can always review and study the design patterns whenever you need to.
 
@@ -931,3 +931,836 @@ In this example, the `Shape` interface represents the flyweight and the `Circle`
 The `ShapeFactory` maintains a `Map` of existing `Circle` objects keyed by their color. When a new `Circle` object is requested, the `ShapeFactory` checks if an object with the requested color already exists. If it does, the existing object is returned. If not, a new `Circle` object is created, added to the cache, and returned.
 
 In this example, 20 `Circle` objects are created with random colors and positions. Note that the colors are shared among multiple Circle objects, thanks to the use of the Flyweight pattern. By using this pattern, we can significantly reduce the amount of memory required to store similar objects. Instead of creating 20 `Circle` objects with different colors, only 3 `Circle` objects are created,
+
+##
+
+### <a name="cor"></a> Chain of Responsability
+
+The Chain of Responsibility pattern is a behavioral pattern that **allows a series of objects (or handlers) to handle a request, where each object decides whether to handle the request** or pass it on to the next object in the chain. It is like an assembly line, where each step adds some value and then passes the product to the next step.
+
+The pattern is composed of three main elements:
+
+* Handler: Defines a common interface for all objects in the chain. This object is responsible for handling the request and deciding whether to pass it on to the next object in the chain or not.
+
+* ConcreteHandler: Implements the handler interface and handles the request. If the object cannot handle the request, it will pass the request to the next object in the chain.
+
+* Client: Initiates the request for the chain of objects.
+
+Let's say we are building a login validation system for a Java web application. In this system, we want to ensure that the user's password has at least 8 characters, contains uppercase and lowercase letters, and has at least one special character.
+
+We can use the Chain of Responsibility pattern to implement password validation, where each validation will be handled by a different handler, and if a validation fails, the responsibility will be passed to the next handler in the chain.
+
+Here is an example implementation:
+
+```java
+public abstract class PasswordValidator {
+    private PasswordValidator nextValidator;
+
+    public PasswordValidator(PasswordValidator nextValidator) {
+        this.nextValidator = nextValidator;
+    }
+
+    public boolean validate(String password) {
+        if (this.performValidation(password)) {
+            if (this.nextValidator != null) {
+                return this.nextValidator.validate(password);
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    protected abstract boolean performValidation(String password);
+}
+
+public class LengthValidator extends PasswordValidator {
+    public LengthValidator(PasswordValidator nextValidator) {
+        super(nextValidator);
+    }
+
+    protected boolean performValidation(String password) {
+        return password.length() >= 8;
+    }
+}
+
+public class UppercaseValidator extends PasswordValidator {
+    public UppercaseValidator(PasswordValidator nextValidator) {
+        super(nextValidator);
+    }
+
+    protected boolean performValidation(String password) {
+        return password.matches(".*[A-Z].*");
+    }
+}
+
+public class LowercaseValidator extends PasswordValidator {
+    public LowercaseValidator(PasswordValidator nextValidator) {
+        super(nextValidator);
+    }
+
+    protected boolean performValidation(String password) {
+        return password.matches(".*[a-z].*");
+    }
+}
+
+public class SpecialCharValidator extends PasswordValidator {
+    public SpecialCharValidator(PasswordValidator nextValidator) {
+        super(nextValidator);
+    }
+
+    protected boolean performValidation(String password) {
+        return password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*");
+    }
+}
+```
+
+In this example, we have the abstract class `PasswordValidator`, which defines the structure of the password validation chain. Each validation handler is implemented by a concrete class that inherits from `PasswordValidator`. Each handler performs a specific validation on the password and calls the next handler in the chain if the validation is successful.
+
+The `Client` class can then create an instance of each handler and configure the responsibility chain by setting the next handler for each one. Then, the client calls the `validate` method of the instance of the first handler in the chain, passing in the password to be validated.
+
+```java
+public class Client {
+    public static void main(String[] args) {
+        PasswordValidator lengthValidator = new LengthValidator(null);
+        PasswordValidator uppercaseValidator = new UppercaseValidator(lengthValidator);
+        PasswordValidator lowercaseValidator = new LowercaseValidator(uppercaseValidator);
+        PasswordValidator specialCharValidator = new SpecialCharValidator(lowercaseValidator);
+        
+        String password = "MyPassword123!";
+
+        if (specialCharValidator.performValidation(senha)) {
+            System.out.println("Valid password!");
+        } else {
+            System.out.println("Invalid password!");
+        }
+    }
+ }
+```
+
+Overall, the Chain of Responsibility pattern provides a flexible and scalable way to handle requests in a system by allowing a chain of objects to handle the request. This can be useful in a variety of scenarios, such as validation, logging, error handling, and more. By breaking down the handling of requests into smaller, more manageable parts, the Chain of Responsibility pattern can help to simplify complex systems and make them easier to maintain and extend.
+
+##
+
+### <a name="command"></a> Command
+
+The Command pattern is a behavioral design pattern that is used to **encapsulate a request as an object**, allowing you to parameterize clients with different requests, queue or log requests, and support undoable operations. In other words, the Command pattern **helps to separate the object that issues a request from the object that actually executes the request.**
+
+Let's say we have an application that can perform various tasks, such as saving a file, printing a document, closing a program, etc. With the Command pattern, we can encapsulate each task as a command object, which can be executed later. Here is a simple example of how the Command pattern can be implemented in Java:
+
+```java
+public interface Command {
+    void execute();
+}
+
+public class SaveCommand implements Command {
+    private Document document;
+
+    public SaveCommand(Document document) {
+        this.document = document;
+    }
+
+    @Override
+    public void execute() {
+        document.save();
+    }
+}
+
+public class PrintCommand implements Command {
+    private Document document;
+
+    public PrintCommand(Document document) {
+        this.document = document;
+    }
+
+    @Override
+    public void execute() {
+        document.print();
+    }
+}
+
+public class Document {
+    public void save() {
+        // code to save the document
+    }
+
+    public void print() {
+        // code to print the document
+    }
+}
+
+public class Application {
+    private Command saveCommand;
+    private Command printCommand;
+
+    public Application(Command saveCommand, Command printCommand) {
+        this.saveCommand = saveCommand;
+        this.printCommand = printCommand;
+    }
+
+    public void saveDocument() {
+        saveCommand.execute();
+    }
+
+    public void printDocument() {
+        printCommand.execute();
+    }
+}
+```
+
+In this example, we have a `Command` interface that defines the `execute()` method that must be implemented by each specific command. Next, we have two concrete command classes, `SaveCommand` and `PrintCommand`, each with a reference to the `Document` object that will be manipulated. The `Document` class contains the actual operations to save and print a document.
+
+Finally, we have the `Application` class, which has references to the command objects and provides methods to execute them. Note that the `Application` class does not need to know how each command is implemented, it just needs to know that each command implements the `Command` interface and can be executed.
+
+Thus, we can create an instance of `Application` by passing the `SaveCommand` and `PrintCommand` objects as arguments, and then call the `saveDocument()` and `printDocument()` methods when necessary.
+
+```java
+Document document = new Document();
+Command saveCommand = new SaveCommand(document);
+Command printCommand = new PrintCommand(document);
+Application app = new Application(saveCommand, printCommand);
+
+// save the document
+app.saveDocument();
+
+// print the document
+app.printDocument();
+```
+
+Note that if we needed to add a new operation, such as closing the document, for example, we could create a new command class that implements the `Command` interface and add it to the `Application` class without affecting existing code. This is possible thanks to the encapsulation provided by the Command pattern.
+
+##
+
+### <a name="iterator"></a> Iterator
+
+The Iterator pattern is a behavioral design pattern that **allows iterating over elements of a collection sequentially without exposing its internal structure**. It enables accessing the elements of a collection without concerning how the collection is implemented or stored. In Java, the Iterator pattern is extensively used in the collections of the Java Collections Framework API, such as ArrayList, LinkedList, and HashSet.
+
+The Iterator pattern defines two main interfaces: the Iterator interface and the Iterable interface. The Iterator interface is used for iterating over the elements of a collection, while the Iterable interface is used for obtaining an Iterator object for a collection. The class that implements the Iterable interface should provide an implementation of the iterator() method that returns an Iterator object for the collection.
+
+Here's an example of how to use the Iterator pattern in Java:
+
+```java
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class IteratorExample {
+
+    public static void main(String[] args) {
+        ArrayList<String> names = new ArrayList<>();
+        names.add("Alice");
+        names.add("Bob");
+        names.add("Charlie");
+
+        // Get an Iterator object for the names collection
+        Iterator<String> iterator = names.iterator();
+
+        // Traverse the collection using the Iterator
+        while (iterator.hasNext()) {
+            String name = iterator.next();
+            System.out.println(name);
+        }
+    }
+
+}
+```
+
+In this example, we create a collection of names using the `ArrayList` class. Next, we obtain an Iterator object for the collection using the `iterator()` method of the `ArrayList` class. Then, we use a `while` loop to traverse the collection using the `Iterator`. Inside the while loop, we use the `hasNext()` method to check if there are still elements in the collection and the `next()` method to get the next element.
+
+Another example is the following:
+
+```java
+import java.util.HashSet;
+import java.util.Iterator;
+
+public class IteratorExample {
+
+    public static void main(String[] args) {
+        HashSet<Integer> numbers = new HashSet<>();
+        numbers.add(1);
+        numbers.add(2);
+        numbers.add(3);
+
+        // Get an Iterator object for the numbers collection
+        Iterator<Integer> iterator = numbers.iterator();
+
+        // Traverse the collection using the Iterator
+        while (iterator.hasNext()) {
+            Integer number = iterator.next();
+            System.out.println(number);
+        }
+    }
+
+}
+```
+
+In this example, we create a collection of numbers using the `HashSet` class. Next, we obtain an `Iterator` object for the collection using the `iterator()` method of the `HashSet` class. Then, we use a `while` loop to traverse the collection using the `Iterator`. Inside the `while` loop, we use the `hasNext()` method to check if there are still elements in the collection and the `next()` method to get the next element.
+
+The Iterator pattern is an efficient and flexible way to iterate over elements of a collection in Java. It provides a high-level abstraction that allows traversing the collection independently of the underlying implementation. It also provides a safe mechanism for accessing the elements of the collection and protects the collection against accidental modifications during iteration.
+
+##
+
+### <a name="mediator"></a> Mediator
+
+The Mediator pattern is a behavioral design pattern that **allows communication between different objects without them directly knowing each other**. Instead, a mediator object is responsible for managing the communication and interactions between the objects. This helps decouple the involved objects and simplify their interaction, making code maintenance and evolution easier.
+
+In Java, the Mediator pattern can be used in various situations, such as messaging systems, chat systems, multiplayer games, home automation systems, among others. Let's analyze an example of a chat system to better understand how the pattern works.
+
+Suppose we are developing a chat system where several people can chat in the same room. Each person can send and receive messages from the other users in the room. To implement this using the Mediator pattern, we can create a ChatRoom class that acts as the mediator between the different users in the room.
+
+Here's an example of how to use the Mediator pattern in Java:
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class ChatRoom {
+    private List<User> users = new ArrayList<>();
+
+    public void sendMessage(String message, User sender) {
+        for (User user : users) {
+            if (user != sender) {
+                user.receiveMessage(message);
+            }
+        }
+    }
+
+    public void addUser(User user) {
+        users.add(user);
+    }
+}
+
+public class User {
+    private String name;
+    private ChatRoom chatRoom;
+
+    public User(String name, ChatRoom chatRoom) {
+        this.name = name;
+        this.chatRoom = chatRoom;
+    }
+
+    public void sendMessage(String message) {
+        chatRoom.sendMessage(message, this);
+    }
+
+    public void receiveMessage(String message) {
+        System.out.println(name + " received message: " + message);
+    }
+}
+
+public class ChatRoomExample {
+    public static void main(String[] args) {
+        ChatRoom chatRoom = new ChatRoom();
+
+        User alice = new User("Alice", chatRoom);
+        User bob = new User("Bob", chatRoom);
+        User charlie = new User("Charlie", chatRoom);
+
+        chatRoom.addUser(alice);
+        chatRoom.addUser(bob);
+        chatRoom.addUser(charlie);
+
+        alice.sendMessage("Hello, everyone!");
+        bob.sendMessage("Hi, Alice!");
+        charlie.sendMessage("Hey, guys!");
+    }
+}
+```
+
+In this example, the `ChatRoom` class acts as the mediator between the different users in the room. It has a list of users who have been added to the room and a `sendMessage` method that sends a message to all users except the sender.
+
+The `User` class represents a user in the chat room. Each user has a name and a reference to the chat room they are participating in. Each user also has a `sendMessage` method that sends a message to the chat room using the `sendMessage` method of the `ChatRoom` class. When a user receives a message, the `receiveMessage` method is called to print the message on the screen.
+
+Finally, in the `ChatRoomExample` class, we create a chat room and add three users to the room. Then, each user sends a message to the chat room using the `sendMessage` method.
+
+The Mediator pattern is an efficient way to manage communication between different objects in Java, helping to decouple the objects involved in the communication. It is particularly useful in scenarios where multiple objects need to communicate with each other in a complex way and can be used in various types of applications, from chat applications to complex enterprise applications.
+
+##
+
+### <a name="memento"></a> Memento
+
+The Memento pattern is a behavioral design pattern that **allows you to save and restore the state of an object without violating encapsulation**. This is especially useful in situations where you want to allow an object to return to a previous state without exposing its internal structure.
+
+In Java, the Memento pattern **is commonly used in applications where an object's state history is important**, such as text editors, games, and drawing applications. Let's take a look at an example of a text editor to better understand how the pattern works.
+
+Suppose we're developing a text editor that allows the user to type and edit the contents of the document. Additionally, the editor should be able to undo the changes made by the user, returning the contents of the document to a previous state. To implement this using the Memento pattern, we can create a Memento class that acts as a capsule that stores the object's previous state.
+
+Here's an example of using the Memento pattern in Java:
+
+```java
+public class TextEditor {
+    private StringBuilder content = new StringBuilder();
+    private Stack<TextEditorMemento> mementos = new Stack<>();
+
+    public void append(String text) {
+        mementos.push(saveMemento());
+        content.append(text);
+    }
+
+    public void undo() {
+        if (!mementos.isEmpty()) {
+            restoreMemento(mementos.pop());
+        }
+    }
+
+    private TextEditorMemento saveMemento() {
+        return new TextEditorMemento(content.toString());
+    }
+
+    private void restoreMemento(TextEditorMemento memento) {
+        content = new StringBuilder(memento.getState());
+    }
+
+    public String getContent() {
+        return content.toString();
+    }
+
+    private class TextEditorMemento {
+        private String state;
+
+        public TextEditorMemento(String state) {
+            this.state = state;
+        }
+
+        public String getState() {
+            return state;
+        }
+    }
+}
+
+public class TextEditorExample {
+    public static void main(String[] args) {
+        TextEditor editor = new TextEditor();
+
+        editor.append("Hello");
+        editor.append(", World!");
+
+        System.out.println(editor.getContent()); // Output: "Hello, World!"
+
+        editor.undo();
+
+        System.out.println(editor.getContent()); // Output: "Hello"
+    }
+}
+```
+
+In this example, the `TextEditor` class represents the text editor itself. It has a `StringBuilder` that stores the current contents of the document and a `Stack` that stores the previous states of the document. The `append` and `undo` methods are used to add text to the document and undo the last change, respectively.
+
+The `TextEditorMemento` class acts as the capsule that stores the previous state of the document. It has a single attribute that represents the previous state of the document and a `getState` method to return the stored state.
+
+When the `append` method is called, the text editor pushes a new `TextEditorMemento` to the mementos stack and adds the text to the `StringBuilder`. When the undo method is called, the text editor restores the previous state of the document using the most recent `TextEditorMemento` in the mementos stack.
+
+Finally, in the `TextEditorExample` class, we create a text editor, add two lines of text to the document, and then undo the last action using the undo method. Then we add one more line of text and undo again. At the end, we print the updated document to verify that only the first and third lines remain.
+
+The Memento pattern is useful in situations where you need to save an object's state at a certain point in time so that it can be restored later, such as in text editors, graphics editors, games, and financial applications. It allows the object to maintain
+
+##
+
+### <a name="observer"></a> Observer
+
+The Observer pattern is a behavioral design pattern that defines a **one-to-many relationship between objects, so that when one object changes its state, all of its dependents are notified and updated automatically**.
+
+The Observer pattern is composed of two main entities: the subject (or observable) and the observer. The subject is the object that contains the state that can change, while the observer is the object that depends on the subject's state and needs to be notified when a change occurs.
+
+In Java, the `Observer` pattern is often implemented using the `Observer` interface and the `Observable` class. The `Observable` class represents the subject and the Observer interface represents the observer.
+
+Here's a simple example of how to use the Observer pattern in Java:
+
+```java
+import java.util.Observable;
+import java.util.Observer;
+
+public class WeatherStation extends Observable {
+    private int temperature;
+    private int humidity;
+
+    public void setWeather(int temperature, int humidity) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+
+        setChanged();
+        notifyObservers();
+    }
+
+    public int getTemperature() {
+        return temperature;
+    }
+
+    public int getHumidity() {
+        return humidity;
+    }
+}
+
+public class PhoneDisplay implements Observer {
+    private WeatherStation weatherStation;
+
+    public PhoneDisplay(WeatherStation weatherStation) {
+        this.weatherStation = weatherStation;
+        weatherStation.addObserver(this);
+    }
+
+    public void update(Observable obs, Object arg) {
+        if (obs instanceof WeatherStation) {
+            WeatherStation weatherStation = (WeatherStation) obs;
+            System.out.println("Temperature: " + weatherStation.getTemperature() + "°C, Humidity: " + weatherStation.getHumidity() + "%");
+        }
+    }
+}
+
+public class WeatherStationExample {
+    public static void main(String[] args) {
+        WeatherStation weatherStation = new WeatherStation();
+        PhoneDisplay phoneDisplay = new PhoneDisplay(weatherStation);
+
+        weatherStation.setWeather(25, 60); // Output: "Temperature: 25°C, Humidity: 60%"
+    }
+}
+```
+
+In this example, the `WeatherStation` class represents the subject and contains the state that can change, represented by the temperature and humidity. When the `setWeather` method is called, the state is updated and the `setChanged` and `notifyObservers` methods are called. The `setChanged` method informs that the object's state has changed and the `notifyObservers` method notifies all registered observers about the change.
+
+The `PhoneDisplay` class represents the observer and is notified about the state change using the `update` method. The `update` method is automatically called by the subject whenever a change occurs. In this example, the observer prints the current temperature and humidity.
+
+Finally, in the `WeatherStationExample` class, we create an instance of the `WeatherStation` class and an instance of the `PhoneDisplay` class. The `PhoneDisplay` instance registers as an observer of the `WeatherStation` instance using the `addObserver` method. Then, we `update` the temperature and humidity using the `setWeather` method and observe that the `PhoneDisplay` instance is automatically notified and prints the current temperature and humidity.
+
+In summary, the Observer pattern is useful for implementing communication between objects in a decoupled way, allowing an object to be automatically notified when a change occurs in another object, without there being coupling between them. This allows an object to be changed without affecting other objects that depend on it, making the code more modular and flexible.
+
+##
+
+### <a name="state"></a> State
+
+The State pattern is a behavioral design pattern that allows an object to change its behavior when its internal state changes. This is achieved by separating the behavior into separate classes that represent each possible state of the object.
+
+The State pattern is composed of two main entities: the context and the state. The context is the object that contains the internal state that can change, while the state is the class that represents each possible state of the object.
+
+In Java, the State pattern is often implemented using interfaces and concrete classes. The `State` interface represents the state, and the concrete classes implement the specific logic of the state. The `Context` class represents the object that contains the internal state.
+
+Here's a simple example of how to use the State pattern in Java:
+
+```java
+public interface State {
+    void pressPlay();
+}
+
+public class ReadyState implements State {
+    private AudioPlayer audioPlayer;
+
+    public ReadyState(AudioPlayer audioPlayer) {
+        this.audioPlayer = audioPlayer;
+    }
+
+    public void pressPlay() {
+        audioPlayer.changeState(new PlayingState(audioPlayer));
+    }
+}
+
+public class PlayingState implements State {
+    private AudioPlayer audioPlayer;
+
+    public PlayingState(AudioPlayer audioPlayer) {
+        this.audioPlayer = audioPlayer;
+    }
+
+    public void pressPlay() {
+        audioPlayer.changeState(new ReadyState(audioPlayer));
+    }
+}
+
+public class AudioPlayer {
+    private State state;
+
+    public AudioPlayer() {
+        state = new ReadyState(this);
+    }
+
+    public void changeState(State newState) {
+        state = newState;
+    }
+
+    public void pressPlay() {
+        state.pressPlay();
+    }
+}
+
+public class AudioPlayerExample {
+    public static void main(String[] args) {
+        AudioPlayer audioPlayer = new AudioPlayer();
+
+        audioPlayer.pressPlay(); // Output: "Playing"
+        audioPlayer.pressPlay(); // Output: "Ready"
+    }
+}
+```
+
+In this example, the `State `class represents the state and defines the `pressPlay` method. The `ReadyState` and `PlayingState` classes implement the specific logic of each state and implement the `pressPlay` method according to the necessary behavior.
+
+The `AudioPlayer` class represents the context and contains the internal state of the object. The `changeState` method changes the internal state of the object to the new state. The `pressPlay` method delegates the `pressPlay` call to the current state.
+
+Finally, in the `AudioPlayerExample` class, we create an instance of the `AudioPlayer` class and call the `pressPlay` method twice. In the first call, the object's state is changed to `PlayingState`, and the message "Playing" is printed. In the second call, the object's state is changed back to ReadyState, and the message "Ready" is printed.
+
+In summary, the State pattern is useful for implementing objects that change behavior according to their internal state. This allows the code to be more modular and flexible, as the logic of each state is encapsulated in its own class. Additionally, the State pattern allows the object to change its behavior without the need to change its public interface.
+
+##
+
+### <a name="strategy"></a> Strategy
+
+The Strategy pattern is a behavioral design pattern that allows an object to have variable behavior, enabling the class to select an algorithm from several different ones, depending on the needs of the context in which the object is being used. This can be useful in situations where a class needs to dynamically change its behavior at runtime.
+
+In Java, the Strategy pattern is often implemented using interfaces and concrete classes. The Strategy interface defines the common behavior of all strategies, while the concrete classes implement specific algorithms.
+
+Here is a simple example of using the Strategy pattern in Java:
+
+```java
+public interface PaymentStrategy {
+    void pay(double amount);
+}
+
+public class CreditCardStrategy implements PaymentStrategy {
+    private String name;
+    private String cardNumber;
+    private String cvv;
+    private String dateOfExpiry;
+
+    public CreditCardStrategy(String name, String cardNumber, String cvv, String dateOfExpiry) {
+        this.name = name;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.dateOfExpiry = dateOfExpiry;
+    }
+
+    public void pay(double amount) {
+        System.out.println("Paid " + amount + " using credit card");
+    }
+}
+
+public class PayPalStrategy implements PaymentStrategy {
+    private String email;
+    private String password;
+
+    public PayPalStrategy(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    public void pay(double amount) {
+        System.out.println("Paid " + amount + " using PayPal");
+    }
+}
+
+public class ShoppingCart {
+    private List<Item> items;
+
+    public ShoppingCart() {
+        this.items = new ArrayList<>();
+    }
+
+    public void addItem(Item item) {
+        this.items.add(item);
+    }
+
+    public void removeItem(Item item) {
+        this.items.remove(item);
+    }
+
+    public double calculateTotal() {
+        double sum = 0;
+        for (Item item : items) {
+            sum += item.getPrice();
+        }
+        return sum;
+    }
+
+    public void pay(PaymentStrategy paymentStrategy) {
+        double amount = calculateTotal();
+        paymentStrategy.pay(amount);
+    }
+}
+
+public class StrategyExample {
+    public static void main(String[] args) {
+        ShoppingCart cart = new ShoppingCart();
+
+        Item item1 = new Item("Shirt", 100);
+        Item item2 = new Item("Pants", 200);
+
+        cart.addItem(item1);
+        cart.addItem(item2);
+
+        cart.pay(new CreditCardStrategy("John Doe", "123456789", "123", "12/24"));
+        cart.pay(new PayPalStrategy("johndoe@example.com", "password"));
+    }
+}
+```
+
+In this example, the `PaymentStrategy` interface defines the common behavior of all strategies. The `CreditCardStrategy` and `PayPalStrategy` classes implement specific payment algorithms using credit card and PayPal, respectively.
+
+The `ShoppingCart` class represents the context in which the strategy is used. The `pay` method delegates the call to the `pay` method to the selected strategy. This allows the `ShoppingCart` object to have different payment behaviors, depending on the selected strategy.
+
+In the `StrategyExample` class, we create an instance of the `ShoppingCart` class and add two items. Then, we select different payment strategies, passing each one as a parameter to the `pay` method.
+
+In summary, the Strategy pattern is a behavioral design pattern that allows different algorithms to be dynamically selected at runtime, depending on the context in which they are used. It separates the algorithm from its implementation, allowing each to be changed independently without affecting the client code.
+
+##
+
+### <a name="tm"></a> Template Method
+
+The Template Method pattern is a behavioral design pattern that defines the basic structure of an algorithm, allowing subclasses to provide specific implementations for certain steps of the algorithm. This allows the overall structure of the algorithm to be defined in a base class, while specific details are left to the subclasses.
+
+The Template Method pattern **is useful in situations where multiple algorithms have similar structures, but differ in some details**. Instead of repeating the same basic structure in multiple classes, the Template Method pattern **allows the overall structure to be defined in a single class and specific details to be implemented in subclasses**.
+
+In Java, the Template Method pattern is often implemented using an abstract class that defines the template method, which defines the overall structure of the algorithm, and abstract methods, which subclasses must implement to provide specific details.
+
+Here is a simple example of how to use the Template Method pattern in Java:
+
+```java
+public abstract class Game {
+    protected abstract void initialize();
+    protected abstract void startPlay();
+    protected abstract void endPlay();
+
+    public final void play() {
+        initialize();
+        startPlay();
+        endPlay();
+    }
+}
+
+public class Chess extends Game {
+    @Override
+    protected void initialize() {
+        System.out.println("Initializing Chess Game...");
+    }
+
+    @Override
+    protected void startPlay() {
+        System.out.println("Starting Chess Game...");
+    }
+
+    @Override
+    protected void endPlay() {
+        System.out.println("Ending Chess Game...");
+    }
+}
+
+public class TicTacToe extends Game {
+    @Override
+    protected void initialize() {
+        System.out.println("Initializing Tic-Tac-Toe Game...");
+    }
+
+    @Override
+    protected void startPlay() {
+        System.out.println("Starting Tic-Tac-Toe Game...");
+    }
+
+    @Override
+    protected void endPlay() {
+        System.out.println("Ending Tic-Tac-Toe Game...");
+    }
+}
+
+public class TemplateMethodExample {
+    public static void main(String[] args) {
+        Game chess = new Chess();
+        chess.play();
+
+        Game tictactoe = new TicTacToe();
+        tictactoe.play();
+    }
+}
+```
+
+In this example, the abstract class `Game` defines the template method `play`, which defines the overall structure of the game. The `Chess` and `TicTacToe` subclasses implement the abstract methods `initialize`, `startPlay`, and `endPlay`, which provide specific details for each game.
+
+The `TemplateMethodExample` class creates instances of the `Chess` and `TicTacToe` subclasses and calls the `play` method on each of them. The `play` method executes the overall structure of the game, calling the `initialize`, `startPlay`, and `endPlay` methods in the subclasses.
+
+In summary, the Template Method pattern is a behavioral design pattern that defines the basic structure of an algorithm in a base class and allows subclasses to provide specific details. In Java, the Template Method pattern is often implemented using an abstract class that defines the template method and abstract methods that subclasses must implement. The example above shows how to use the Template Method pattern to create different games with similar structures but different specific details.
+
+##
+
+### <a name="visitor"></a> Visitor
+
+The Visitor pattern is a behavioral design pattern that allows adding new operations to an existing object structure without modifying the structure itself. It separates the object operations into separate classes called visitors, allowing new operations to be added to the system without modifying existing classes.
+
+The Visitor pattern is **useful when there is a complex object structure that contains many different types of objects and many operations that can be performed on those objects**. Instead of adding these operations directly to the objects, the Visitor pattern adds them as visitors, which visit the objects and perform the operations.
+
+In Java, the Visitor pattern is often implemented using interfaces for visitors and the classes that will be visited. The visited classes implement an accept method that takes a visitor as an argument and calls the appropriate method of the visitor. Each visitor implements methods to perform the operations on the objects it visits.
+
+Here is a simple example of how to use the Visitor pattern in Java:
+```java
+interface Visitor {
+    void visit(Circle circle);
+    void visit(Square square);
+}
+
+interface Shape {
+    void accept(Visitor visitor);
+}
+
+class Circle implements Shape {
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+}
+
+class Square implements Shape {
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+}
+
+class AreaVisitor implements Visitor {
+    public void visit(Circle circle) {
+        System.out.println("Calculating area of circle");
+    }
+    public void visit(Square square) {
+        System.out.println("Calculating area of square");
+    }
+}
+
+class PerimeterVisitor implements Visitor {
+    public void visit(Circle circle) {
+        System.out.println("Calculating perimeter of circle");
+    }
+    public void visit(Square square) {
+        System.out.println("Calculating perimeter of square");
+    }
+}
+
+public class VisitorExample {
+    public static void main(String[] args) {
+        Shape[] shapes = {new Circle(), new Square()};
+        Visitor areaVisitor = new AreaVisitor();
+        Visitor perimeterVisitor = new PerimeterVisitor();
+
+        for (Shape shape : shapes) {
+            shape.accept(areaVisitor);
+            shape.accept(perimeterVisitor);
+        }
+    }
+}
+```
+
+In this example, the `Shape` interface defines the `accept` method, which takes a visitor as an argument. The `Circle` and `Square` classes implement the accept method, calling the appropriate visitor method.
+
+The `Visitor`, `AreaVisitor`, and `PerimeterVisitor` interfaces define the operations that can be performed on the visited objects. Each of the visitor classes implements the methods defined in the `Visitor` interface, performing the operations on the visited objects.
+
+The `VisitorExample` class creates an array of `Shape` objects and two visitors, `AreaVisitor` and `PerimeterVisitor`. It iterates through the array of `Shape` objects, calling the `accept` method on each one, passing the visitors as arguments. The `accept` method calls the appropriate visitor method, which performs the appropriate operation on the visited object.
+
+In summary, the Visitor pattern is a behavioral design pattern that allows adding new operations to an existing object structure without modifying the structure itself. In Java, the Visitor pattern is often implemented using interfaces for visitors and the classes that will be visited. The example shown defines how the Visitor pattern can be implemented in Java to add a new operation to an existing object structure.
+
+#
+
+## Congratulation!! You finished all topics of Guide GoF
+
+Congratulations on completing this comprehensive guide to the 23 design patterns defined by the Gang of Four! We hope you have found it informative and useful in your development work.
+
+By understanding and implementing these patterns, you will be able to write more flexible, reusable, and maintainable code. These patterns are tried and true solutions to common problems in software design, and their use can greatly enhance the quality of your applications.
+
+We would like to thank you for taking the time to read this guide and hope that it has helped you become a better developer. If you found it useful, we would appreciate it if you could give the repository a star and share it with your friends and colleagues.
+
+For more information on software design patterns and related topics, please follow us on social media:
+
+* Instagram: [@ivii.ns](https://www.instagram.com/ivii.ns/)
+* Linkedin: [Dev-Ivi](https://www.linkedin.com/in/ivisson-pereira-b301aa250/)
+> Thank you again for reading, and happy coding!
