@@ -20,20 +20,22 @@ Sumário de todos os tipos de design patterns:
   * [Facade](#facade)
   * [Flyweight](#flyweight)
 * **Padrões comportamentais**
-  * Chain Of Responsability
-  * Command
-  * Iterator
-  * Mediator
-  * Memento
-  * Observer
-  * State
-  * Strategy
-  * Template Method
-  * Visitor
+  * [Chain Of Responsability](#cor)
+  * [Command](#command)
+  * [Iterator](#iterator)
+  * [Mediator](#mediator)
+  * [Memento](#memento)
+  * [Observer](#observer)
+  * [State](#state)
+  * [Strategy](#strategy)
+  * [Template Method](#tm)
+  * [Visitor](#visitor)
   
 Cada um desses padrões é explicado detalhadamente no livro GoF, juntamente com exemplos de código e diretrizes para sua implementação, este repositório tratará todos os principais pontos do livro, porém para entender e poder usufruir 100% do oferecido, recomendo fortemente a leitura do livro. Ao você estudar e entender esses padrões, poderá criar soluções de software mais flexíveis, reutilizáveis e fáceis de manter. Então vamos começar! Hands-On! Não se esqueça de marcar este repositório com uma :star: para poder sempre rever e estudar os design patterns sempre que precisar.
 
 ## Padrões Criacionais
+> Eles lidam com o processo de criação de objetos e como eles são criados, gerenciados e implementados. Eles fornecem maneiras de criar objetos sem expor a lógica de criação ao cliente, permitindo maior flexibilidade na criação de objetos.
+
 ### <a name="singleton"></a>Singleton
 
 Singleton é um padrão criacional, ele garante que uma classe tenha **apenas uma instância** e forneça um ponto global de acesso a ela. Isso é útil quando precisamos por exemplo, de um objeto que coordene ações em todo o sistema, como um gerenciador de configurações ou um cache. O padrão Singleton garante que haja apenas uma instância desses objetos, evitando a necessidade de várias instâncias e, portanto, reduzindo o consumo de recursos do sistema.
@@ -374,6 +376,7 @@ Carro carro = new CarroBuilder()
 Observe como cada chamada de método do Builder define um atributo do carro. Quando chamamos o método `build()` no final, o Builder cria e retorna um objeto Carro completo com todos os atributos e características que nós passamos, tornando a instanciação do objeto um processo simples e flexível.
 
 ##
+
 ### Prototype
 
 O design pattern Prototype tem como objetivo permitir a criação de novos objetos a partir da **clonagem de objetos existentes**, sem que seja necessário conhecimento detalhado da sua implementação. Em outras palavras, **ele permite a criação de novos objetos a partir de um modelo existente**.
@@ -433,6 +436,8 @@ Com a implementação do padrão `Prototype`, podemos criar diferentes tipos de 
 ##
 
 ## Padrões Estruturais
+> Estes padrões se concentram na composição de classes e objetos para formar estruturas maiores e mais complexas. Eles ajudam a organizar e simplificar o código, tornando-o mais fácil de entender e manter.
+
 ### <a name="adapter"></a> Adapter
 O padrão Adapter é um design pattern estrutural que permite que **duas classes com interfaces incompatíveis possam trabalhar juntas**. Ele **converte a interface de uma classe em outra interface** que o cliente espera. Isso permite que objetos com interfaces diferentes trabalhem juntos, sem que o cliente precise modificar o código da classe original.
 
@@ -931,4 +936,842 @@ O cliente utiliza a classe `ShapeFactory` para obter os objetos `Circle` e chama
 Com o uso do padrão Flyweight, é possível reduzir significativamente a quantidade de memória necessária para armazenar objetos similares. No exemplo acima, em vez de criar 20 objetos `Circle` com cores diferentes, apenas 3 objetos `Circle` são criados, um para cada cor, e são compartilhados entre todos os círculos desenhados.
 
 ##
+
 ## Padrões Comportamentais
+> Estes padrões lidam com a comunicação entre objetos e como eles interagem e se comunicam entre si para executar uma tarefa. Eles ajudam a separar as responsabilidades entre objetos e tornam o código mais flexível e fácil de modificar.
+
+### <a name="cor"></a> Chain of Responsability
+
+O padrão Chain of Responsibility é um padrão comportamental que **permite que uma série de objetos (ou handlers) tratem uma solicitação**, sendo que cada objeto decide se irá tratar a solicitação ou se irá passá-la para o próximo objeto na cadeia. É como uma cadeia de montagem, onde cada etapa adiciona algum valor e depois passa o produto para a próxima etapa.
+
+O padrão é composto por três elementos principais:
+
+* Handler (Manipulador): Define uma interface comum para todos os objetos da cadeia. Este objeto tem a responsabilidade de manipular a solicitação e decidir se deve passá-la para o próximo objeto da cadeia ou não.
+
+* ConcreteHandler (Manipulador Concreto): Implementa a interface do manipulador e manipula a solicitação. Se o objeto não puder lidar com a solicitação, ele passará a solicitação para o próximo objeto da cadeia.
+
+* Client (Cliente): Inicia a solicitação para a cadeia de objetos.
+
+Vamos supor que estamos construindo um sistema de validação de login para uma aplicação web em Java. Neste sistema, queremos garantir que a senha do usuário tenha pelo menos 8 caracteres, que contenha letras maiúsculas e minúsculas, e que tenha pelo menos um caractere especial.
+
+Podemos utilizar o padrão Chain of Responsibility para implementar a validação da senha, onde cada validação será tratada por um handler diferente, e se uma validação falhar, a responsabilidade será passada para o próximo handler na cadeia.
+
+A seguir, segue um exemplo de implementação:
+
+```java
+public abstract class ValidadorSenha {
+    private ValidadorSenha proximoValidador;
+
+    public ValidadorSenha(ValidadorSenha proximoValidador) {
+        this.proximoValidador = proximoValidador;
+    }
+
+    public boolean validar(String senha) {
+        if (this.realizarValidacao(senha)) {
+            if (this.proximoValidador != null) {
+                return this.proximoValidador.validar(senha);
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    protected abstract boolean realizarValidacao(String senha);
+}
+
+public class TamanhoSenhaValidador extends ValidadorSenha {
+    public TamanhoSenhaValidador(ValidadorSenha proximoValidador) {
+        super(proximoValidador);
+    }
+
+    protected boolean realizarValidacao(String senha) {
+        return senha.length() >= 8;
+    }
+}
+
+public class MaiusculaSenhaValidador extends ValidadorSenha {
+    public MaiusculaSenhaValidador(ValidadorSenha proximoValidador) {
+        super(proximoValidador);
+    }
+
+    protected boolean realizarValidacao(String senha) {
+        return senha.matches(".*[A-Z].*");
+    }
+}
+
+public class MinusculaSenhaValidador extends ValidadorSenha {
+    public MinusculaSenhaValidador(ValidadorSenha proximoValidador) {
+        super(proximoValidador);
+    }
+
+    protected boolean realizarValidacao(String senha) {
+        return senha.matches(".*[a-z].*");
+    }
+}
+
+public class CaractereEspecialSenhaValidador extends ValidadorSenha {
+    public CaractereEspecialSenhaValidador(ValidadorSenha proximoValidador) {
+        super(proximoValidador);
+    }
+
+    protected boolean realizarValidacao(String senha) {
+        return senha.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*");
+    }
+}
+```
+
+
+Neste exemplo, temos a classe abstrata `ValidadorSenha` que define a estrutura da cadeia de validação de senha. Cada handler de validação é implementado por uma classe concreta que herda de ValidadorSenha. Cada handler realiza uma validação específica na senha e chama o próximo handler na cadeia, caso a validação seja bem-sucedida.
+
+A classe `Cliente` pode então criar uma instância de cada handler e configurar a cadeia de responsabilidade definindo o próximo handler para cada um. Em seguida, o cliente chama o método validar da instância do primeiro handler da cadeia, passando a senha a ser validada.
+
+```java
+public class Cliente {
+    public static void main(String[] args) {
+        ValidadorSenha tamanhoValidador = new TamanhoSenhaValidador(null);
+        ValidadorSenha maiusculaValidador = new MaiusculaSenhaValidador(tamanhoValidador);
+        ValidadorSenha minusculaValidador = new MinusculaSenhaValidador(maiusculaValidador);
+        ValidadorSenha especialValidador = new CaractereEspecialSenhaValidador(minusculaValidador);
+        
+        String senha = "MinhaSenha123!";
+
+        if (especialValidador.validar(senha)) {
+            System.out.println("Senha válida!");
+        } else {
+            System.out.println("Senha inválida!");
+        }
+    }
+ }
+```
+
+
+Neste exemplo, criamos instâncias de cada handler de validação e definimos o próximo handler para cada um. Em seguida, chamamos o método validar da instância do primeiro handler na cadeia (`CaractereEspecialSenhaValidador`) e passamos a senha a ser validada. Se a senha passar por todos os handlers sem problemas, a mensagem "Senha válida!" será exibida. Caso contrário, a mensagem "Senha inválida!" será exibida.
+
+Com este exemplo, podemos ver como o padrão `Chain of Responsibility` pode ser útil para implementar uma cadeia de validação de senha de forma eficiente e escalável, permitindo que cada handler de validação tenha uma responsabilidade específica na validação da senha.
+
+##
+
+### <a name="command"></a> Command
+
+O padrão Command é um padrão de design comportamental que é **usado para encapsular uma solicitação como um objeto**, permitindo que você parametrize clientes com diferentes solicitações, faça fila ou registre solicitações e suporte operações de desfazer. Em outras palavras, o padrão Command **ajuda a separar o objeto que emite uma solicitação do objeto que realmente executa a solicitação**.
+
+Vamos supor que temos uma aplicação que pode executar várias tarefas, como salvar um arquivo, imprimir um documento, fechar um programa etc. Com o padrão Command, podemos encapsular cada tarefa como um objeto de comando, que pode ser executado mais tarde. Aqui está um exemplo simples de como o padrão Command pode ser implementado em Java:
+
+```java
+public interface Command {
+    void execute();
+}
+
+public class SaveCommand implements Command {
+    private Document document;
+
+    public SaveCommand(Document document) {
+        this.document = document;
+    }
+
+    @Override
+    public void execute() {
+        document.save();
+    }
+}
+
+public class PrintCommand implements Command {
+    private Document document;
+
+    public PrintCommand(Document document) {
+        this.document = document;
+    }
+
+    @Override
+    public void execute() {
+        document.print();
+    }
+}
+
+public class Document {
+    public void save() {
+        // código para salvar o documento
+    }
+
+    public void print() {
+        // código para imprimir o documento
+    }
+}
+
+public class Application {
+    private Command saveCommand;
+    private Command printCommand;
+
+    public Application(Command saveCommand, Command printCommand) {
+        this.saveCommand = saveCommand;
+        this.printCommand = printCommand;
+    }
+
+    public void saveDocument() {
+        saveCommand.execute();
+    }
+
+    public void printDocument() {
+        printCommand.execute();
+    }
+}
+```
+
+Neste exemplo, temos uma interface `Command` que define o método `execute()` que deve ser implementado por cada comando específico. Em seguida, temos duas classes de comando concretas, `SaveCommand` e `PrintCommand`, cada uma com uma referência ao objeto `Document` que será manipulado. A classe `Document` contém as operações reais de salvar e imprimir um documento.
+
+Finalmente, temos a classe `Application`, que possui referências aos objetos de comando e fornece métodos para executá-los. Observe que a classe `Application` não precisa saber como cada comando é implementado, ela só precisa saber que cada comando implementa a interface `Command` e pode ser executado.
+
+Assim, podemos criar uma instância de `Application` passando os objetos `SaveCommand` e `PrintCommand` como argumentos, e então chamar os métodos `saveDocument()` e `printDocument()` quando necessário.
+
+```java
+Document document = new Document();
+Command saveCommand = new SaveCommand(document);
+Command printCommand = new PrintCommand(document);
+Application app = new Application(saveCommand, printCommand);
+
+// salvar o documento
+app.saveDocument();
+
+// imprimir o documento
+app.printDocument();
+```
+
+Observe que, se precisássemos adicionar uma nova operação, como fechar o documento, por exemplo, poderíamos criar uma nova classe de comando que implementa a interface `Command` e adicioná-la à classe `Application` sem afetar o código existente. Isso é possível graças ao encapsulamento fornecido pelo padrão Command.
+
+##
+
+### <a name="iterator"></a> Iterator
+
+O padrão Iterator é um padrão de projeto de comportamental que **permite percorrer elementos de uma coleção de maneira sequencial sem expor sua estrutura interna**. Ele permite acessar os elementos de uma coleção sem se preocupar com a forma como a coleção é implementada ou armazenada. Em Java, o padrão Iterator é usado extensivamente nas coleções da API Java Collections Framework, como ArrayList, LinkedList e HashSet.
+
+O padrão Iterator define duas interfaces principais: a interface Iterator e a interface Iterable. A interface Iterator é usada para iterar sobre os elementos de uma coleção, enquanto a interface Iterable é usada para obter um objeto Iterator para uma coleção. A classe que implementa a interface Iterable deve fornecer uma implementação do método iterator() que retorna um objeto Iterator para a coleção.
+
+Aqui está um exemplo de como usar o padrão Iterator em Java:
+
+```java
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class IteratorExample {
+
+    public static void main(String[] args) {
+        ArrayList<String> names = new ArrayList<>();
+        names.add("Alice");
+        names.add("Bob");
+        names.add("Charlie");
+
+        // Obtém um Iterator para a coleção de nomes
+        Iterator<String> iterator = names.iterator();
+
+        // Percorre a coleção usando o Iterator
+        while (iterator.hasNext()) {
+            String name = iterator.next();
+            System.out.println(name);
+        }
+    }
+
+}
+```
+
+Neste exemplo, criamos uma coleção de nomes usando a classe `ArrayList`. Em seguida, obtemos um objeto `Iterator` para a coleção usando o método `iterator()` da classe `ArrayList`. Em seguida, usamos um laço while para percorrer a coleção usando o `Iterator`. Dentro do laço `while`, usamos o método `hasNext()` para verificar se ainda existem elementos na coleção e o método `next()` para obter o próximo elemento.
+
+Outro exemplo é o seguinte:
+
+```java
+import java.util.HashSet;
+import java.util.Iterator;
+
+public class IteratorExample {
+
+    public static void main(String[] args) {
+        HashSet<Integer> numbers = new HashSet<>();
+        numbers.add(1);
+        numbers.add(2);
+        numbers.add(3);
+
+        // Obtém um Iterator para a coleção de números
+        Iterator<Integer> iterator = numbers.iterator();
+
+        // Percorre a coleção usando o Iterator
+        while (iterator.hasNext()) {
+            Integer number = iterator.next();
+            System.out.println(number);
+        }
+    }
+
+}
+```
+
+Neste exemplo, criamos uma coleção de números usando a classe `HashSet`. Em seguida, obtemos um objeto `Iterator` para a coleção usando o método `iterator()` da classe `HashSet`. Em seguida, usamos um laço `while` para percorrer a coleção usando o `Iterator`. Dentro do laço `while`, usamos o método `hasNext()` para verificar se ainda existem elementos na coleção e o método `next()` para obter o próximo elemento.
+
+O padrão Iterator é uma maneira eficiente e flexível de percorrer elementos de uma coleção em Java. Ele fornece uma abstração de alto nível que permite percorrer a coleção de maneira independente da implementação subjacente. Ele também fornece um mecanismo seguro para acessar elementos da coleção e protege a coleção contra modificações acidentais durante a iteração.
+
+##
+
+### <a name="mediator"></a> Mediator
+
+O padrão Mediator é um padrão de projeto comportamental que **permite a comunicação entre diferentes objetos sem que eles conheçam diretamente uns aos outros**. Em vez disso, um objeto mediador é responsável por gerenciar a comunicação e as interações entre os objetos. Isso ajuda a desacoplar os objetos envolvidos e a simplificar sua interação, facilitando a manutenção e evolução do código.
+
+Em Java, o padrão Mediator pode ser usado em diversas situações, como em sistemas de mensagens, sistemas de chat, jogos multiplayer, sistemas de automação residencial, entre outros. Vamos analisar um exemplo de sistema de chat para entender melhor como o padrão funciona.
+
+Suponha que estamos desenvolvendo um sistema de chat em que várias pessoas podem conversar em uma mesma sala. Cada pessoa pode enviar e receber mensagens dos outros usuários da sala. Para implementar isso usando o padrão Mediator, podemos criar uma classe ChatRoom que atua como o mediador entre os diferentes usuários da sala.
+
+Aqui está um exemplo de como usar o padrão Mediator em Java:
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class ChatRoom {
+    private List<User> users = new ArrayList<>();
+
+    public void sendMessage(String message, User sender) {
+        for (User user : users) {
+            if (user != sender) {
+                user.receiveMessage(message);
+            }
+        }
+    }
+
+    public void addUser(User user) {
+        users.add(user);
+    }
+}
+
+public class User {
+    private String name;
+    private ChatRoom chatRoom;
+
+    public User(String name, ChatRoom chatRoom) {
+        this.name = name;
+        this.chatRoom = chatRoom;
+    }
+
+    public void sendMessage(String message) {
+        chatRoom.sendMessage(message, this);
+    }
+
+    public void receiveMessage(String message) {
+        System.out.println(name + " received message: " + message);
+    }
+}
+
+public class ChatRoomExample {
+    public static void main(String[] args) {
+        ChatRoom chatRoom = new ChatRoom();
+
+        User alice = new User("Alice", chatRoom);
+        User bob = new User("Bob", chatRoom);
+        User charlie = new User("Charlie", chatRoom);
+
+        chatRoom.addUser(alice);
+        chatRoom.addUser(bob);
+        chatRoom.addUser(charlie);
+
+        alice.sendMessage("Hello, everyone!");
+        bob.sendMessage("Hi, Alice!");
+        charlie.sendMessage("Hey, guys!");
+    }
+}
+```
+
+Neste exemplo, a classe `ChatRoom` atua como o mediador entre os diferentes usuários da sala. Ela possui uma lista de usuários que foram adicionados à sala e um método `sendMessage` que envia uma mensagem para todos os usuários, exceto para o remetente.
+
+A classe `User` representa um usuário na sala de chat. Cada usuário possui um nome e uma referência à sala de chat em que está participando. Cada usuário também possui um método sendMessage que envia uma mensagem para a sala de chat usando o método `sendMessage` da classe `ChatRoom`. Quando um usuário recebe uma mensagem, o método `receiveMessage` é chamado para imprimir a mensagem na tela.
+
+Finalmente, na classe `ChatRoomExample`, criamos uma sala de chat e adicionamos três usuários à sala. Em seguida, cada usuário envia uma mensagem para a sala de chat usando o método `sendMessage`.
+
+O padrão Mediator é uma maneira eficiente de gerenciar a comunicação entre diferentes objetos em Java, ajudando a desacoplar os objetos envolvidos na comunicação. Ele é particularmente útil em cenários em que vários objetos precisam se comunicar uns com os outros de forma complexa e pode ser usado em vários tipos de aplicativos, desde aplicativos de chat até aplicativos empresariais complexos.
+
+##
+
+### <a name="memento"></a> Memento
+
+O padrão Memento é um padrão de projeto comportamental que **permite que você salve e restaure o estado de um objeto sem violar o encapsulamento**. Isso é especialmente útil em situações em que você deseja permitir que um objeto retorne a um estado anterior sem expor sua estrutura interna.
+
+Em Java, o padrão Memento **é comumente usado em aplicações em que o histórico de estados de um objeto é importante**, como editores de texto, jogos e aplicativos de desenho. Vamos analisar um exemplo de um editor de texto para entender melhor como o padrão funciona.
+
+Suponha que estamos desenvolvendo um editor de texto que permite que o usuário digite e edite o conteúdo do documento. Além disso, o editor deve ser capaz de desfazer as alterações realizadas pelo usuário, retornando o conteúdo do documento a um estado anterior. Para implementar isso usando o padrão Memento, podemos criar uma classe Memento que atua como uma cápsula que armazena o estado anterior do objeto.
+
+Aqui está um exemplo de como usar o padrão Memento em Java:
+
+```java
+public class TextEditor {
+    private StringBuilder content = new StringBuilder();
+    private Stack<TextEditorMemento> mementos = new Stack<>();
+
+    public void append(String text) {
+        mementos.push(saveMemento());
+        content.append(text);
+    }
+
+    public void undo() {
+        if (!mementos.isEmpty()) {
+            restoreMemento(mementos.pop());
+        }
+    }
+
+    private TextEditorMemento saveMemento() {
+        return new TextEditorMemento(content.toString());
+    }
+
+    private void restoreMemento(TextEditorMemento memento) {
+        content = new StringBuilder(memento.getState());
+    }
+
+    public String getContent() {
+        return content.toString();
+    }
+
+    private class TextEditorMemento {
+        private String state;
+
+        public TextEditorMemento(String state) {
+            this.state = state;
+        }
+
+        public String getState() {
+            return state;
+        }
+    }
+}
+
+public class TextEditorExample {
+    public static void main(String[] args) {
+        TextEditor editor = new TextEditor();
+
+        editor.append("Hello");
+        editor.append(", World!");
+
+        System.out.println(editor.getContent()); // Output: "Hello, World!"
+
+        editor.undo();
+
+        System.out.println(editor.getContent()); // Output: "Hello"
+    }
+}
+```
+
+Neste exemplo, a classe `TextEditor` representa o editor de texto em si. Ela possui um `StringBuilder` que armazena o conteúdo atual do documento e uma `Stack` que armazena os estados anteriores do documento. Os métodos `append` e `undo` são usados para adicionar texto ao documento e desfazer a última alteração, respectivamente.
+
+A classe `TextEditorMemento` atua como a cápsula que armazena o estado anterior do documento. Ela possui um único atributo que representa o estado anterior do documento e um método `getState` para retornar o estado armazenado.
+
+Ao chamar o método `append`, o editor de texto empurra um novo `TextEditorMemento` para a pilha de mementos e adiciona o texto ao `StringBuilder`. Quando o método undo é chamado, o editor de texto restaura o estado anterior do documento usando o `TextEditorMemento` mais recente na pilha de mementos.
+
+Finalmente, na classe `TextEditorExample`, criamos um editor de texto, adicionamos duas linhas de texto ao documento e, em seguida, desfazemos a última ação usando o método undo. Em seguida, adicionamos mais uma linha de texto e desfazemos novamente. Ao final, imprimimos o documento atualizado para verificar que apenas a primeira e a terceira linhas permaneceram.
+
+O padrão Memento é útil em situações em que é necessário salvar o estado de um objeto em um determinado ponto do tempo para que possa ser restaurado mais tarde, como em editores de texto, editores gráficos, jogos e aplicativos financeiros. Ele permite que o objeto mantenha seu encapsulamento, pois a lógica de armazenamento do estado é colocada em um objeto separado. Isso torna o código mais fácil de manter e evoluir.
+
+##
+
+### <a name="observer"></a> Observer 
+
+O padrão Observer é um padrão de projeto comportamental que define uma relação de **um-para-muitos entre objetos, de modo que, quando um objeto muda de estado, todos os seus dependentes são notificados e atualizados automaticamente**.
+
+O padrão Observer é composto por duas entidades principais: o sujeito (ou observável) e o observador. O sujeito é o objeto que contém o estado que pode mudar, enquanto o observador é o objeto que depende do estado do sujeito e precisa ser notificado quando ocorre uma mudança.
+
+Em Java, o padrão `Observer` é frequentemente implementado usando a interface `Observer` e a classe `Observable`. A classe `Observable` representa o sujeito e a interface Observer representa o observador.
+
+Aqui está um exemplo simples de como usar o padrão Observer em Java:
+
+```java
+import java.util.Observable;
+import java.util.Observer;
+
+public class WeatherStation extends Observable {
+    private int temperature;
+    private int humidity;
+
+    public void setWeather(int temperature, int humidity) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+
+        setChanged();
+        notifyObservers();
+    }
+
+    public int getTemperature() {
+        return temperature;
+    }
+
+    public int getHumidity() {
+        return humidity;
+    }
+}
+
+public class PhoneDisplay implements Observer {
+    private WeatherStation weatherStation;
+
+    public PhoneDisplay(WeatherStation weatherStation) {
+        this.weatherStation = weatherStation;
+        weatherStation.addObserver(this);
+    }
+
+    public void update(Observable obs, Object arg) {
+        if (obs instanceof WeatherStation) {
+            WeatherStation weatherStation = (WeatherStation) obs;
+            System.out.println("Temperatura: " + weatherStation.getTemperature() + "°C, Umidade: " + weatherStation.getHumidity() + "%");
+        }
+    }
+}
+
+public class WeatherStationExample {
+    public static void main(String[] args) {
+        WeatherStation weatherStation = new WeatherStation();
+        PhoneDisplay phoneDisplay = new PhoneDisplay(weatherStation);
+
+        weatherStation.setWeather(25, 60); // Output: "Temperatura: 25°C, Umidade: 60%"
+    }
+}
+```
+
+Neste exemplo, a classe `WeatherStation` representa o sujeito e contém o estado que pode mudar, representado pela temperatura e umidade. Quando o método `setWeather` é chamado, o estado é atualizado e os métodos `setChanged` e `notifyObservers` são chamados. O método `setChanged` informa que o estado do objeto mudou e o método `notifyObservers` notifica todos os observadores registrados sobre a mudança.
+
+A classe `PhoneDisplay` representa o observador e é notificada sobre a mudança de estado usando o método `update`. O método `update` é chamado automaticamente pelo sujeito sempre que ocorre uma mudança. Neste exemplo, o observador imprime a temperatura e umidade atual.
+
+Por fim, na classe `WeatherStationExample`, criamos uma instância da classe `WeatherStation` e uma instância da classe `PhoneDisplay`. A instância de `PhoneDisplay` se registra como um observador da instância de `WeatherStation` usando o método `addObserver`. Em seguida, atualizamos a temperatura e umidade usando o método `setWeather` e observamos que a instância de `PhoneDisplay` é notificada automaticamente e imprime a temperatura e umidade atual.
+
+Em resumo, o padrão Observer é útil para implementar a comunicação entre objetos de forma desacoplada, permitindo que um objeto seja notificado automaticamente quando ocorrer uma alteração em outro objeto, sem que haja acoplamento entre eles. Isso permite que um objeto seja alterado sem afetar outros objetos que dependem dele, tornando o código mais modular e flexível.
+
+##
+
+### <a name="state"></a> State
+
+O padrão State é um padrão de projeto comportamental que permite que um objeto altere seu comportamento quando seu estado interno muda. Isso é alcançado por meio da separação do comportamento em classes separadas que representam cada estado possível do objeto.
+
+O padrão State é composto por duas entidades principais: o contexto e o estado. O contexto é o objeto que contém o estado interno que pode mudar, enquanto o estado é a classe que representa cada estado possível do objeto.
+
+Em Java, o padrão State é frequentemente implementado usando interfaces e classes concretas. A interface `State` representa o estado e as classes concretas implementam a lógica específica do estado. A classe Context representa o objeto que contém o estado interno.
+
+Aqui está um exemplo simples de como usar o padrão State em Java:
+
+```java
+public interface State {
+    void pressPlay();
+}
+
+public class ReadyState implements State {
+    private AudioPlayer audioPlayer;
+
+    public ReadyState(AudioPlayer audioPlayer) {
+        this.audioPlayer = audioPlayer;
+    }
+
+    public void pressPlay() {
+        audioPlayer.changeState(new PlayingState(audioPlayer));
+    }
+}
+
+public class PlayingState implements State {
+    private AudioPlayer audioPlayer;
+
+    public PlayingState(AudioPlayer audioPlayer) {
+        this.audioPlayer = audioPlayer;
+    }
+
+    public void pressPlay() {
+        audioPlayer.changeState(new ReadyState(audioPlayer));
+    }
+}
+
+public class AudioPlayer {
+    private State state;
+
+    public AudioPlayer() {
+        state = new ReadyState(this);
+    }
+
+    public void changeState(State newState) {
+        state = newState;
+    }
+
+    public void pressPlay() {
+        state.pressPlay();
+    }
+}
+
+public class AudioPlayerExample {
+    public static void main(String[] args) {
+        AudioPlayer audioPlayer = new AudioPlayer();
+
+        audioPlayer.pressPlay(); // Output: "Playing"
+        audioPlayer.pressPlay(); // Output: "Ready"
+    }
+}
+```
+
+Neste exemplo, a classe `State` representa o estado e define o método `pressPlay`. As classes `ReadyState` e `PlayingState` implementam a lógica específica de cada estado e implementam o método `pressPlay` de acordo com o comportamento necessário.
+
+A classe `AudioPlayer` representa o contexto e contém o estado interno do objeto. O método `changeState` altera o estado interno do objeto para o novo estado. O método `pressPlay` delega a chamada ao método `pressPlay` para o estado atual.
+
+Por fim, na classe `AudioPlayerExample`, criamos uma instância da classe `AudioPlayer` e chamamos o método `pressPlay` duas vezes. Na primeira chamada, o estado do objeto é alterado para `PlayingState` e é impressa a mensagem "Playing". Na segunda chamada, o estado do objeto é alterado de volta para `ReadyState` e é impressa a mensagem "Ready".
+
+Em resumo, o padrão `State` é útil para implementar objetos que mudam de comportamento de acordo com seu estado interno. Isso permite que o código seja mais modular e flexível, já que a lógica de cada estado é encapsulada em sua própria classe. Além disso, o padrão `State` permite que o objeto altere seu comportamento sem a necessidade de mudar sua interface pública.
+
+##
+
+### <a name="strategy"></a> Strategy
+
+O padrão Strategy é um padrão de projeto comportamental que permite que um objeto tenha um comportamento variável, permitindo que a classe possa selecionar um algoritmo dentre vários diferentes, dependendo das necessidades do contexto em que o objeto está sendo utilizado. Isso pode ser útil em situações em que uma classe precisa mudar dinamicamente o seu comportamento em tempo de execução.
+
+Em Java, o padrão Strategy é frequentemente implementado usando interfaces e classes concretas. A interface Strategy define o comportamento comum a todas as estratégias, enquanto as classes concretas implementam algoritmos específicos.
+
+Aqui está um exemplo simples de como usar o padrão Strategy em Java:
+
+```java
+public interface PaymentStrategy {
+    void pay(double amount);
+}
+
+public class CreditCardStrategy implements PaymentStrategy {
+    private String name;
+    private String cardNumber;
+    private String cvv;
+    private String dateOfExpiry;
+
+    public CreditCardStrategy(String name, String cardNumber, String cvv, String dateOfExpiry) {
+        this.name = name;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.dateOfExpiry = dateOfExpiry;
+    }
+
+    public void pay(double amount) {
+        System.out.println("Paid " + amount + " using credit card");
+    }
+}
+
+public class PayPalStrategy implements PaymentStrategy {
+    private String email;
+    private String password;
+
+    public PayPalStrategy(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    public void pay(double amount) {
+        System.out.println("Paid " + amount + " using PayPal");
+    }
+}
+
+public class ShoppingCart {
+    private List<Item> items;
+
+    public ShoppingCart() {
+        this.items = new ArrayList<>();
+    }
+
+    public void addItem(Item item) {
+        this.items.add(item);
+    }
+
+    public void removeItem(Item item) {
+        this.items.remove(item);
+    }
+
+    public double calculateTotal() {
+        double sum = 0;
+        for (Item item : items) {
+            sum += item.getPrice();
+        }
+        return sum;
+    }
+
+    public void pay(PaymentStrategy paymentStrategy) {
+        double amount = calculateTotal();
+        paymentStrategy.pay(amount);
+    }
+}
+
+public class StrategyExample {
+    public static void main(String[] args) {
+        ShoppingCart cart = new ShoppingCart();
+
+        Item item1 = new Item("Shirt", 100);
+        Item item2 = new Item("Pants", 200);
+
+        cart.addItem(item1);
+        cart.addItem(item2);
+
+        cart.pay(new CreditCardStrategy("John Doe", "123456789", "123", "12/24"));
+        cart.pay(new PayPalStrategy("johndoe@example.com", "password"));
+    }
+}
+```
+
+Neste exemplo, a interface `PaymentStrategy` define o comportamento comum a todas as estratégias. As classes `CreditCardStrategy` e `PayPalStrategy` implementam algoritmos específicos de pagamento usando cartão de crédito e PayPal, respectivamente.
+
+A classe `ShoppingCart` representa o contexto em que a estratégia é utilizada. O método `pay` delega a chamada ao método `pay` para a estratégia selecionada. Isso permite que o objeto `ShoppingCart` tenha diferentes comportamentos de pagamento, dependendo da estratégia selecionada.
+
+Na classe `StrategyExample`, criamos uma instância da classe `ShoppingCart` e adicionamos dois itens. Em seguida, selecionamos diferentes estratégias de pagamento, passando cada uma delas como parâmetro para o método `pay`.
+
+Em resumo, o padrão Strategy é um padrão de projeto comportamental que permite que diferentes algoritmos possam ser selecionados dinamicamente em tempo de execução, dependendo do contexto em que são usados. Ele separa o algoritmo da sua implementação, permitindo que cada um possa ser alterado independentemente, sem afetar o código cliente.
+
+##
+
+### <a name="tm"></a> Template Method
+
+O padrão Template Method é um padrão de projeto comportamental que define a estrutura básica de um algoritmo, permitindo que as subclasses forneçam implementações específicas para certos passos do algoritmo. Isso permite que a estrutura geral do algoritmo seja definida em uma classe base, enquanto os detalhes específicos são deixados para as subclasses.
+
+O padrão Template Method **é útil em situações em que vários algoritmos têm estruturas semelhantes, mas diferem em alguns detalhes**. Em vez de repetir a mesma estrutura básica em várias classes, o padrão Template Method **permite que a estrutura geral seja definida em uma única classe e os detalhes específicos sejam implementados em subclasses**.
+
+Em Java, o padrão Template Method é frequentemente implementado usando uma classe abstrata que define o método template, que define a estrutura geral do algoritmo, e métodos abstratos, que as subclasses devem implementar para fornecer detalhes específicos.
+
+Aqui está um exemplo simples de como usar o padrão Template Method em Java:
+
+```java
+public abstract class Game {
+    protected abstract void initialize();
+    protected abstract void startPlay();
+    protected abstract void endPlay();
+
+    public final void play() {
+        initialize();
+        startPlay();
+        endPlay();
+    }
+}
+
+public class Chess extends Game {
+    @Override
+    protected void initialize() {
+        System.out.println("Initializing Chess Game...");
+    }
+
+    @Override
+    protected void startPlay() {
+        System.out.println("Starting Chess Game...");
+    }
+
+    @Override
+    protected void endPlay() {
+        System.out.println("Ending Chess Game...");
+    }
+}
+
+public class TicTacToe extends Game {
+    @Override
+    protected void initialize() {
+        System.out.println("Initializing Tic-Tac-Toe Game...");
+    }
+
+    @Override
+    protected void startPlay() {
+        System.out.println("Starting Tic-Tac-Toe Game...");
+    }
+
+    @Override
+    protected void endPlay() {
+        System.out.println("Ending Tic-Tac-Toe Game...");
+    }
+}
+
+public class TemplateMethodExample {
+    public static void main(String[] args) {
+        Game chess = new Chess();
+        chess.play();
+
+        Game tictactoe = new TicTacToe();
+        tictactoe.play();
+    }
+}
+```
+
+Neste exemplo, a classe abstrata `Game` define o método template `play`, que define a estrutura geral do jogo. As subclasses `Chess` e `TicTacToe` implementam os métodos abstratos `initialize`, `startPlay` e `endPlay`, que fornecem os detalhes específicos para cada jogo.
+
+A classe `TemplateMethodExample` cria instâncias das subclasses `Chess` e `TicTacToe` e chama o método `play` em cada uma delas. O método `play` executa a estrutura geral do jogo, chamando os métodos `initialize`, `startPlay` e `endPlay` nas subclasses.
+
+Em resumo, o padrão Template Method é um padrão de projeto comportamental que define a estrutura básica de um algoritmo em uma classe base e permite que as subclasses forneçam detalhes específicos. Em Java, o padrão Template Method é frequentemente implementado usando uma classe abstrata que define o método template e métodos abstratos que as subclasses devem implementar. O exemplo acima mostra como usar o padrão Template Method para criar diferentes jogos com estruturas semelhantes, mas detalhes específicos diferentes.
+
+##
+
+### <a name="visitor"></a> Visitor
+
+O padrão Visitor é um padrão de projeto comportamental que permite adicionar novas operações a uma estrutura de objetos existente sem modificar a própria estrutura. Ele separa as operações dos objetos em classes separadas, chamadas visitantes, permitindo que novas operações sejam adicionadas ao sistema sem modificar as classes existentes.
+
+O padrão Visitor é **útil quando se tem uma estrutura de objetos complexa que contém muitos tipos diferentes de objetos e muitas operações que podem ser executadas nesses objetos**. Em vez de adicionar essas operações diretamente aos objetos, o padrão Visitor adiciona-as como visitantes, que visitam os objetos e executam as operações.
+
+Em Java, o padrão Visitor é frequentemente implementado usando interfaces para os visitantes e as classes que serão visitadas. As classes visitadas implementam um método accept que recebe um visitante como argumento e chama o método apropriado do visitante. Cada visitante implementa métodos para executar as operações nos objetos que visita.
+
+Aqui está um exemplo simples de como usar o padrão Visitor em Java:
+
+```java
+interface Visitor {
+    void visit(Circle circle);
+    void visit(Square square);
+}
+
+interface Shape {
+    void accept(Visitor visitor);
+}
+
+class Circle implements Shape {
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+}
+
+class Square implements Shape {
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+}
+
+class AreaVisitor implements Visitor {
+    public void visit(Circle circle) {
+        System.out.println("Calculating area of circle");
+    }
+    public void visit(Square square) {
+        System.out.println("Calculating area of square");
+    }
+}
+
+class PerimeterVisitor implements Visitor {
+    public void visit(Circle circle) {
+        System.out.println("Calculating perimeter of circle");
+    }
+    public void visit(Square square) {
+        System.out.println("Calculating perimeter of square");
+    }
+}
+
+public class VisitorExample {
+    public static void main(String[] args) {
+        Shape[] shapes = {new Circle(), new Square()};
+        Visitor areaVisitor = new AreaVisitor();
+        Visitor perimeterVisitor = new PerimeterVisitor();
+
+        for (Shape shape : shapes) {
+            shape.accept(areaVisitor);
+            shape.accept(perimeterVisitor);
+        }
+    }
+}
+```
+
+Neste exemplo, a interface `Shape` define o método `accept`, que recebe um visitante como argumento. As classes `Circle` e `Square` implementam o método `accept`, chamando o método apropriado do visitante.
+
+As interfaces `Visitor`, `AreaVisitor` e `PerimeterVisitor` definem as operações que podem ser executadas nos objetos visitados. Cada uma das classes visitantes implementa os métodos definidos na interface `Visitor`, executando as operações nos objetos visitados.
+
+A classe `VisitorExample` cria um array de objetos `Shape` e dois visitantes, `AreaVisitor` e `PerimeterVisitor`. Ela itera pelo array de objetos `Shape`, chamando o método `accept` em cada um deles, passando os visitantes como argumentos. O método `accept` chama o método apropriado do visitante, que executa a operação apropriada no objeto visitado.
+
+Em resumo, o padrão `Visitor` é um padrão de projeto comportamental que permite adicionar novas operações a uma estrutura de objetos existente sem modificar a própria estrutura. Em Java, o padrão Visitor é frequentemente implementado usando interfaces para os visitantes e as classes que serão visitadas. O exemplo acima ilustra como o padrão Visitor pode ser usado para adicionar uma nova operação a uma hierarquia de classes existente, sem modificar as próprias classes.
+
+#
+
+## Parabéns, você chegou no final do Guia GoF!! 🥳
+
+Parabéns por completar este guia abrangente dos 23 padrões de projeto definidos pelo Gang of Four! Esperamos que você o tenha achado informativo e útil em seu trabalho de desenvolvimento.
+
+Ao entender e implementar esses padrões, você será capaz de escrever código mais flexível, reutilizável e fácil de manter. Esses padrões são soluções testadas e comprovadas para problemas comuns âmbito de desenvolvimento software, e seu uso pode melhorar significativamente a qualidade de suas aplicações.
+
+Gostaríamos de agradecer por dedicar seu tempo para ler este guia e esperamos que ele tenha ajudado você a se tornar um desenvolvedor melhor. Se você achou útil, ficaríamos muito gratos se pudesse dar uma estrela ao repositório e compartilhá-lo com seus amigos e colegas.
+
+Segue algumas das minhas redes sociais:
+
+* Instagram: [@ivii.ns](https://www.instagram.com/ivii.ns/)
+* Linkedin: [Dev-Ivi](https://www.linkedin.com/in/ivisson-pereira-b301aa250/)
+> Obrigado novamente por ler este guia e boa sorte no desenvolvimento!!
